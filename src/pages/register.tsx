@@ -11,7 +11,7 @@ export function RegisterScreen({ navigation }: any) {
     if (!nome.trim() || !email.trim() || !senha.trim()) {
       return Alert.alert("Ops", "Preencha todos os campos");
     }
-
+    
     const user = { nome, email, senha };
 
     await SecureStore.setItemAsync("user", JSON.stringify(user));
