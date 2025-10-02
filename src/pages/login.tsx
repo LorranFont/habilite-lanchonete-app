@@ -78,6 +78,8 @@ export function LoginScreen({ navigation }: any) {
   );
 }
 
+
+
 const styles = StyleSheet.create({
   wrap: { flex: 1, padding: 20, justifyContent: "center" },
   title: { fontSize: 22, fontWeight: "700", marginBottom: 8 },

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, Button, Alert, TextInput, StyleSheet } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
+
 export function RegisterScreen({ navigation }: any) {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
