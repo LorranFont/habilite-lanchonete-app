@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 type User = { nome: string; email: string; senha: string };
@@ -24,15 +24,23 @@ export function MenuScreen({ navigation }: any) {
   }
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: "700" }}>🍔 Menu</Text>
+    <View className="flex-1 bg-gray-50 px-5 py-10">
+      <Text className="text-2xl font-extrabold text-habilite-primary mb-2">🍔 Menu</Text>
       {user && (
-        <>
-          <Text>Bem-vindo, {user.nome}!</Text>
-          <Text>{user.email}</Text>
-        </>
+        <View className="mb-6">
+          <Text className="text-base text-gray-700">Bem-vindo, <Text className="font-semibold">{user.nome}</Text>!</Text>
+          <Text className="text-gray-500">{user.email}</Text>
+        </View>
       )}
-      <Button title="Sair" onPress={handleLogout} />
+
+      <Pressable
+        onPress={handleLogout}
+        className="bg-habilite-accent rounded-2xl px-5 py-3 self-start active:opacity-80"
+      >
+        <Text className="text-white font-bold">Sair</Text>
+      </Pressable>
     </View>
   );
 }
+
+export default MenuScreen;
