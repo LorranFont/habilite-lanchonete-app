@@ -1,9 +1,22 @@
 import React, { useState } from "react";
-import {View, Text, TextInput, Pressable, Alert, KeyboardAvoidingView, Platform} from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { Field, Title, Subtitle, Button, Card, Caption} from "../components/ui";
-
-
+import {
+  Field,
+  Title,
+  Subtitle,
+  Button,
+  Card,
+  Caption,
+} from "../components/ui";
 
 type StoredUser = { nome: string; email: string; senha: string };
 
@@ -18,7 +31,10 @@ export function RegisterScreen({ navigation }: any) {
   const [submitting, setSubmitting] = useState(false);
 
   const [erros, setErros] = useState<{
-    nome?: string; email?: string; senha?: string; confirmar?: string;
+    nome?: string;
+    email?: string;
+    senha?: string;
+    confirmar?: string;
   }>({});
 
   function validate() {
@@ -118,7 +134,8 @@ export function RegisterScreen({ navigation }: any) {
                 value={senha}
                 onChangeText={(t) => {
                   setSenha(t);
-                  if (erros.senha) setErros((p) => ({ ...p, senha: undefined }));
+                  if (erros.senha)
+                    setErros((p) => ({ ...p, senha: undefined }));
                 }}
                 placeholder="••••••••"
                 secureTextEntry={!showPwd}

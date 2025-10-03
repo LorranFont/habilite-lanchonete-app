@@ -1,46 +1,70 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import * as SecureStore from "expo-secure-store";
+import { Card } from "../components/ui";
 
-type User = { nome: string; email: string; senha: string };
+type Product = { id: string; nome: string; preco: number };
+
+const MOCK: Product[] = [
+  { id: "1", nome: "Hambúrguer", preco: 25.0 },
+  { id: "2", nome: "Pizza", preco: 30.0 },
+  { id: "3", nome: "Salada", preco: 15.0 },
+  { id: "4", nome: "Batata Frita", preco: 10.0 },
+  { id: "5", nome: "Refrigerante", preco: 5.0 },
+];
 
 export function MenuScreen({ navigation }: any) {
-  const [user, setUser] = useState<User | null>(null);
+  const [products, setProducts] = useState<Product[] | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const raw = await SecureStore.getItemAsync("user");
-      if (raw) {
-        try {
-          setUser(JSON.parse(raw));
-        } catch {}
-      }
-    })();
+    setTimeout(() => setProducts(MOCK), 1200);
   }, []);
 
-  async function handleLogout() {
-    await SecureStore.deleteItemAsync("user");
-    navigation.reset({ index: 0, routes: [{ name: "Home" }] });
+  if (!products) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#e11d48" />
+        <Text className="mt-3 text-gray-500">Carregando cardápio...</Text>
+      </View>
+    );
   }
 
   return (
-    <View className="flex-1 bg-gray-50 px-5 py-10">
-      <Text className="text-2xl font-extrabold text-habilite-primary mb-2">🍔 Menu</Text>
-      {user && (
-        <View className="mb-6">
-          <Text className="text-base text-gray-700">Bem-vindo, <Text className="font-semibold">{user.nome}</Text>!</Text>
-          <Text className="text-gray-500">{user.email}</Text>
-        </View>
-      )}
+    <View className="flex-1 bg-gray-50 p-4 pt-8">
+      <Text className="text-2xl font-bold mb-4 text-rose-600">🍔 Cardápio</Text>
 
-      <Pressable
-        onPress={handleLogout}
-        className="bg-habilite-accent rounded-2xl px-5 py-3 self-start active:opacity-80"
-      >
-        <Text className="text-white font-bold">Sair</Text>
-      </Pressable>
+      <FlatList
+        data={products}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Card className="mb-3">
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-lg font-semibold text-gray-800">
+                  {item.nome}
+                </Text>
+                <Text className="text-gray-500">
+                  R$ {item.preco.toFixed(2)}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() =>
+                  navigation.navigate("Carrinho", { product: item })
+                }
+                className="bg-rose-600 px-4 py-2 rounded-xl"
+              >
+                <Text className="text-white font-semibold">Adicionar</Text>
+              </Pressable>
+            </View>
+          </Card>
+        )}
+      />
     </View>
   );
 }
-
-export default MenuScreen;
