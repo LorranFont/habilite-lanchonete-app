@@ -137,9 +137,9 @@ export function LoginScreen({ navigation }: any) {
 
           <Button
             title={submitting ? "Entrando..." : "Entrar"}
-            Loading={submitting}
+            loading={submitting}
             onPress={handleLogin}
-            className="mt-2"
+            className="mt-2 w-full"
           />
 
           <View className="flex-row items-center my-5">
@@ -152,6 +152,7 @@ export function LoginScreen({ navigation }: any) {
             title="Criar conta"
             variant="outline"
             onPress={() => navigation.navigate("Register")}
+            className="mt-3 w-full"
           />
         </Card>
 

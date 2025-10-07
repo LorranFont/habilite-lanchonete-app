@@ -1,11 +1,13 @@
-import react from 'react';
-import { Pressable, Text, ActivityIndicator } from 'react-native';
+import React from "react";
+import { ActivityIndicator, Pressable, Text } from "react-native";
+
+type ButtonVariant = "primary" | "outline";
 
 type ButtonProps = {
   title: string;
   onPress?: () => void;
-  variant?: 'primary' | 'outline';
-  Loading?: boolean;
+  variant?: ButtonVariant;
+  loading?: boolean;
   disabled?: boolean;
   className?: string;
 };
@@ -13,38 +15,41 @@ type ButtonProps = {
 export function Button({
   title,
   onPress,
-  variant = 'primary',
-  Loading = false,
+  variant = "primary",
+  loading = false,
   disabled = false,
-  className = '',
+  className = "",
 }: ButtonProps) {
-    const isDisabled = Loading || disabled;
+  const isDisabled = loading || disabled;
 
-    const base = 
-        "mt-6 rounded-2xl px-4 py-3 border border-gray-300 active:opacity-80 items-center justify-center";
-    const variants = {
-        primary: isDisabled
-            ? "bg-gray-400"
-            : "bg-habilite-accent",
-        outline: 
-        "border border-gray-300 bg-white",
-    };
+  const base =
+    "rounded-2xl px-4 py-3 border active:opacity-80 items-center justify-center";
 
-    return (
-        <Pressable
-            className={`${base} ${variants[variant]} ${className}`}
-            onPress={onPress}
-            disabled={isDisabled}
-        >
-            {Loading ? (
-                <ActivityIndicator color={variant === 'outline' ? "#111827" : "#fff"} />
-            ) : (
-                <Text className={variant === 'outline' ? "text-habilite-primary font-semibold" : "text-black font-bold"}>
-                    {title}
-                </Text>
-            )}
-        </Pressable>
-    );
+  const variantStyles: Record<ButtonVariant, string> = {
+    primary: isDisabled
+      ? "bg-gray-300 border-gray-300"
+      : "bg-habilite-accent border-habilite-accent",
+    outline: "bg-white border-gray-300",
+  };
+
+  const textStyles: Record<ButtonVariant, string> = {
+    primary: "text-black font-bold",
+    outline: "text-habilite-primary font-semibold",
+  };
+
+  return (
+    <Pressable
+      className={`${base} ${variantStyles[variant]} ${className}`}
+      onPress={onPress}
+      disabled={isDisabled}
+    >
+      {loading ? (
+        <ActivityIndicator color={variant === "outline" ? "#111827" : "#000"} />
+      ) : (
+        <Text className={textStyles[variant]}>{title}</Text>
+      )}
+    </Pressable>
+  );
 }
 
 export default Button;
