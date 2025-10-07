@@ -35,13 +35,9 @@ export function CheckoutScreen({ navigation }: any) {
     if (!validate()) return;
     try {
       setEnviando(true);
-
-      //Aqui entraria a chamada de API real (POST pedido)
-
-      // Simulação
+      // TODO: POST para API real
       await new Promise((r) => setTimeout(r, 900));
-
-      clear(); // limpa carrinho
+      clear();
       Alert.alert("Pedido enviado 🎉", "Seu pedido foi recebido!", [
         { text: "OK", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Menu" }] }) },
       ]);
@@ -57,11 +53,13 @@ export function CheckoutScreen({ navigation }: any) {
         <Subtitle>Revise seus itens e preencha os dados</Subtitle>
       </View>
 
-    //Resumo
+      {/* Resumo */}
       <Card className="mb-4">
         {items.map((it) => (
           <View key={String(it.id)} className="flex-row items-center justify-between mb-2">
-            <Text className="text-gray-800">{it.quantity}× {it.name}</Text>
+            <Text className="text-gray-800">
+              {it.quantity}× {it.name}
+            </Text>
             <Text className="text-gray-600">{brl(it.price * it.quantity)}</Text>
           </View>
         ))}
@@ -71,7 +69,7 @@ export function CheckoutScreen({ navigation }: any) {
         </View>
       </Card>
 
-      //Dados do cliente 
+      {/* Dados do cliente */}
       <Card className="mb-4">
         <Field label="Seu nome">
           <TextInput
@@ -92,7 +90,7 @@ export function CheckoutScreen({ navigation }: any) {
         </Field>
       </Card>
 
-        //Pagamento
+      {/* Pagamento */}
       <Card>
         <Text className="text-gray-700 mb-3">Forma de pagamento</Text>
         <View className="flex-row gap-2">
