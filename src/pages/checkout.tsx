@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Pressable,
@@ -16,7 +16,7 @@ type PaymentMethod = "pix" | "dinheiro" | "cartao";
 export function CheckoutScreen({ navigation }: any) {
   const { items, totalQty, totalPrice, clear } = useCart();
   const [nome, setNome] = useState("");
-  const [mesa, setMesa] = useState("");
+  const [observacao, setObservacao] = useState("");
   const [pagamento, setPagamento] = useState<PaymentMethod | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -29,8 +29,8 @@ export function CheckoutScreen({ navigation }: any) {
       Alert.alert("Informe seu nome");
       return false;
     }
-    if (!mesa.trim()) {
-      Alert.alert("Informe o número da mesa / turma");
+    if (!observacao.trim()) {
+      Alert.alert("Informe uma observação");
       return false;
     }
     if (!pagamento) {
@@ -85,7 +85,7 @@ export function CheckoutScreen({ navigation }: any) {
       </Card>
 
       <Card className="mb-4">
-        <Text className="text-gray-700 font-semibold mb-3">Dados do cliente</Text>
+        <Text className="text-gray-700 font-semibold mb-3">Dados do cliente e observações</Text>
         <Field label="Seu nome">
           <TextInput
             value={nome}
@@ -95,11 +95,11 @@ export function CheckoutScreen({ navigation }: any) {
           />
         </Field>
 
-        <Field label="Mesa / Turma">
+        <Field label="Observações">
           <TextInput
-            value={mesa}
-            onChangeText={setMesa}
-            placeholder="Ex.: Mesa 4"
+            value={observacao}
+            onChangeText={setObservacao}
+            placeholder="Ex.: Sem glúten"
             className="border rounded-2xl px-4 py-3 bg-white border-gray-300"
           />
         </Field>
@@ -119,7 +119,7 @@ export function CheckoutScreen({ navigation }: any) {
                 className={`px-4 py-2 rounded-2xl border ${
                   isActive
                     ? "bg-habilite-accent border-habilite-accent"
-                    : "bg-white border-gray-300"
+                    : "bg- border-gray-300"
                 }`}
               >
                 <Text

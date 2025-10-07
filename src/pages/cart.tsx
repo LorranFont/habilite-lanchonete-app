@@ -3,6 +3,7 @@ import { View, Text, Pressable, FlatList } from "react-native";
 import { useCart } from "../context/cart";
 import { Card, Button } from "../components/ui";
 import { brl } from "../utils/money";
+import { Ionicons } from "@expo/vector-icons";
 
 export function CartScreen({ navigation }: { navigation: any }) {
   const { items, totalQty, totalPrice, inc, dec, remove, clear } = useCart();
@@ -23,9 +24,10 @@ export function CartScreen({ navigation }: { navigation: any }) {
   }
 
   return (
+    
     <View className="flex-1 bg-gray-50 px-4 pt-8">
-      <Text className="text-2xl font-bold text-habilite-primary mb-4">
-        🧺 Carrinho
+      <Text className="text-2xl font-bold text-habilite-primary mb-4"> 
+        Carrinho
       </Text>
 
       <FlatList
