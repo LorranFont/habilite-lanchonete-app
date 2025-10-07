@@ -1,7 +1,22 @@
 import React, { useState } from "react";
-import {View, Text, TextInput, Pressable, Alert, KeyboardAvoidingView, Platform,} from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { Field, Title, Subtitle, Button, Card, Caption} from "../components/ui";
+import {
+  Field,
+  Title,
+  Subtitle,
+  Button,
+  Card,
+  Caption,
+} from "../components/ui";
 
 type StoredUser = {
   nome: string;
@@ -71,7 +86,6 @@ export function LoginScreen({ navigation }: any) {
           <Title>Bem-vindo 👋</Title>
           <Subtitle>Acesse sua conta da lanchonete Habilite</Subtitle>
         </View>
-
 
         <Card>
           <Field label="E-mail" error={errors.email}>

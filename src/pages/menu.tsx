@@ -1,46 +1,81 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import * as SecureStore from "expo-secure-store";
+import { View, Text, FlatList, Pressable, ActivityIndicator, Alert } from "react-native";
+import { Card, Button } from "../components/ui";
+import { useCart } from "../context/cart";
 
-type User = { nome: string; email: string; senha: string };
+//mock pode usar id string; aqui eu converto pra number ao enviar pro contexto
+type Row = { id: string; nome: string; preco: number };
+
+const MOCK: Row[] = [
+  { id: "1", nome: "Hambúrguer", preco: 25.0 },
+  { id: "2", nome: "Pizza", preco: 30.0 },
+  { id: "3", nome: "Salada", preco: 15.0 },
+  { id: "4", nome: "Batata Frita", preco: 10.0 },
+  { id: "5", nome: "Refrigerante", preco: 5.0 },
+];
 
 export function MenuScreen({ navigation }: any) {
-  const [user, setUser] = useState<User | null>(null);
+  const [products, setProducts] = useState<Row[] | null>(null);
+  const { addItem, totalQty } = useCart(); // usa addItem e totalQty do contexto
 
   useEffect(() => {
-    (async () => {
-      const raw = await SecureStore.getItemAsync("user");
-      if (raw) {
-        try {
-          setUser(JSON.parse(raw));
-        } catch {}
-      }
-    })();
+    const t = setTimeout(() => setProducts(MOCK), 800);
+    return () => clearTimeout(t);
   }, []);
 
-  async function handleLogout() {
-    await SecureStore.deleteItemAsync("user");
-    navigation.reset({ index: 0, routes: [{ name: "Home" }] });
+  if (!products) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#e11d48" />
+        <Text className="mt-3 text-gray-500">Carregando cardápio...</Text>
+      </View>
+    );
   }
 
   return (
-    <View className="flex-1 bg-gray-50 px-5 py-10">
-      <Text className="text-2xl font-extrabold text-habilite-primary mb-2">🍔 Menu</Text>
-      {user && (
-        <View className="mb-6">
-          <Text className="text-base text-gray-700">Bem-vindo, <Text className="font-semibold">{user.nome}</Text>!</Text>
-          <Text className="text-gray-500">{user.email}</Text>
-        </View>
-      )}
+    <View className="flex-1 bg-gray-50 px-4 pt-8">
+      <View className="flex-row items-center justify-between mb-4">
+        <Text className="text-2xl font-bold text-habilite-primary">🍔 Cardápio</Text>
+        <Pressable
+          onPress={() => navigation.navigate("Cart")}  // nome da rota igual ao App.tsx
+          className="px-3 py-2 rounded-xl bg-habilite-accent active:opacity-90"
+        >
+          <Text className="text-black font-bold">Carrinho ({totalQty})</Text>
+        </Pressable>
+      </View>
 
-      <Pressable
-        onPress={handleLogout}
-        className="bg-habilite-accent rounded-2xl px-5 py-3 self-start active:opacity-80"
-      >
-        <Text className="text-white font-bold">Sair</Text>
-      </Pressable>
+      <FlatList
+        data={products}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Card className="mb-3">
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-lg font-semibold text-gray-800">{item.nome}</Text>
+                <Text className="text-gray-500">R$ {item.preco.toFixed(2)}</Text>
+              </View>
+
+              <Button
+                title="Adicionar"
+                className="w-32"
+                onPress={() => {
+                  // chama o contexto com o shape que ele espera (id:number, name, price)
+                  addItem({
+                    id: Number(item.id),
+                    name: item.nome,
+                    price: item.preco,
+                    image: "",
+                    quantity: 1, // o reducer ignora e controla internamente
+                    category: "",
+                  });
+                  //confirmar clique
+                  Alert.alert("Adicionado", `${item.nome} foi para o carrinho ✅`);
+                }}
+              />
+            </View>
+          </Card>
+        )}
+      />
     </View>
   );
 }
-
-export default MenuScreen;
