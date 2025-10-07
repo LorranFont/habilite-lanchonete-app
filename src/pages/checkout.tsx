@@ -1,14 +1,23 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert, ScrollView } from "react-native";
+import { useState } from "react";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useCart } from "../context/cart";
 import { Card, Button, Field, Title, Subtitle } from "../components/ui";
 import { brl } from "../utils/money";
 
+type PaymentMethod = "pix" | "dinheiro" | "cartao";
+
 export function CheckoutScreen({ navigation }: any) {
   const { items, totalQty, totalPrice, clear } = useCart();
   const [nome, setNome] = useState("");
-  const [mesa, setMesa] = useState("");
-  const [pagamento, setPagamento] = useState<"pix" | "dinheiro" | "cartao" | null>(null);
+  const [observacao, setObservacao] = useState("");
+  const [pagamento, setPagamento] = useState<PaymentMethod | null>(null);
   const [enviando, setEnviando] = useState(false);
 
   function validate() {
@@ -20,8 +29,8 @@ export function CheckoutScreen({ navigation }: any) {
       Alert.alert("Informe seu nome");
       return false;
     }
-    if (!mesa.trim()) {
-      Alert.alert("Informe o número da mesa / turma");
+    if (!observacao.trim()) {
+      Alert.alert("Informe uma observação");
       return false;
     }
     if (!pagamento) {
@@ -36,14 +45,15 @@ export function CheckoutScreen({ navigation }: any) {
     try {
       setEnviando(true);
 
-      //Aqui entraria a chamada de API real (POST pedido)
+      await new Promise((resolve) => setTimeout(resolve, 900));
 
-      // Simulação
-      await new Promise((r) => setTimeout(r, 900));
-
-      clear(); // limpa carrinho
+      clear();
       Alert.alert("Pedido enviado 🎉", "Seu pedido foi recebido!", [
-        { text: "OK", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Menu" }] }) },
+        {
+          text: "OK",
+          onPress: () =>
+            navigation.reset({ index: 0, routes: [{ name: "Menu" }] }),
+        },
       ]);
     } finally {
       setEnviando(false);
@@ -57,10 +67,13 @@ export function CheckoutScreen({ navigation }: any) {
         <Subtitle>Revise seus itens e preencha os dados</Subtitle>
       </View>
 
-    //Resumo
       <Card className="mb-4">
+        <Text className="text-gray-700 font-semibold mb-3">Resumo do pedido</Text>
         {items.map((it) => (
-          <View key={String(it.id)} className="flex-row items-center justify-between mb-2">
+          <View
+            key={String(it.id)}
+            className="flex-row items-center justify-between mb-2"
+          >
             <Text className="text-gray-800">{it.quantity}× {it.name}</Text>
             <Text className="text-gray-600">{brl(it.price * it.quantity)}</Text>
           </View>
@@ -71,8 +84,8 @@ export function CheckoutScreen({ navigation }: any) {
         </View>
       </Card>
 
-      //Dados do cliente 
       <Card className="mb-4">
+        <Text className="text-gray-700 font-semibold mb-3">Dados do cliente e observações</Text>
         <Field label="Seu nome">
           <TextInput
             value={nome}
@@ -82,46 +95,59 @@ export function CheckoutScreen({ navigation }: any) {
           />
         </Field>
 
-        <Field label="Mesa / Turma">
+        <Field label="Observações">
           <TextInput
-            value={mesa}
-            onChangeText={setMesa}
-            placeholder="Ex.: Mesa 4"
+            value={observacao}
+            onChangeText={setObservacao}
+            placeholder="Ex.: Sem glúten"
             className="border rounded-2xl px-4 py-3 bg-white border-gray-300"
           />
         </Field>
       </Card>
 
-        //Pagamento
       <Card>
-        <Text className="text-gray-700 mb-3">Forma de pagamento</Text>
-        <View className="flex-row gap-2">
-          {(["pix", "dinheiro", "cartao"] as const).map((opt) => (
-            <Pressable
-              key={opt}
-              onPress={() => setPagamento(opt)}
-              className={`px-4 py-2 rounded-2xl border ${
-                pagamento === opt ? "bg-habilite-accent border-habilite-accent" : "bg-white border-gray-300"
-              }`}
-            >
-              <Text className={pagamento === opt ? "text-white font-semibold" : "text-habilite-primary"}>
-                {opt.toUpperCase()}
-              </Text>
-            </Pressable>
-          ))}
+        <Text className="text-gray-700 font-semibold mb-3">
+          Forma de pagamento
+        </Text>
+        <View className="flex-row flex-wrap gap-2">
+          {(["pix", "dinheiro", "cartao"] as const).map((opt) => {
+            const isActive = pagamento === opt;
+            return (
+              <Pressable
+                key={opt}
+                onPress={() => setPagamento(opt)}
+                className={`px-4 py-2 rounded-2xl border ${
+                  isActive
+                    ? "bg-habilite-accent border-habilite-accent"
+                    : "bg- border-gray-300"
+                }`}
+              >
+                <Text
+                  className={
+                    isActive
+                      ? "text-black font-semibold"
+                      : "text-habilite-primary"
+                  }
+                >
+                  {opt.toUpperCase()}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <Button
           title={enviando ? "Enviando..." : "Confirmar pedido"}
           onPress={handleConfirm}
-          className="mt-4"
-          Loading={enviando}
+          className="mt-4 w-full"
+          loading={enviando}
+          disabled={items.length === 0}
         />
 
         <Button
           title="Voltar ao carrinho"
           variant="outline"
-          className="mt-2"
+          className="mt-3 w-full"
           onPress={() => navigation.goBack()}
         />
       </Card>

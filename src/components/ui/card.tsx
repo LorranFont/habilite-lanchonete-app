@@ -1,7 +1,12 @@
-import React, { ReactNode } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { ReactNode } from "react";
+import { View } from "react-native";
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
+type CardProps = {
+  children: ReactNode;
+  className?: string;
+};
+
+export function Card({ children, className = "" }: CardProps) {
   return (
     <View className={`bg-white rounded-3xl p-5 shadow-sm border border-gray-100 ${className}`}>
       {children}

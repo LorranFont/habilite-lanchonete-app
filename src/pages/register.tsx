@@ -182,16 +182,16 @@ export function RegisterScreen({ navigation }: any) {
 
           <Button
             title={submitting ? "Salvando..." : "Criar conta"}
-            Loading={submitting}
+            loading={submitting}
             onPress={handleRegister}
-            className="mt-2"
+            className="mt-2 w-full"
           />
 
           <Button
             title="Já tem conta? Entrar"
             variant="outline"
             onPress={() => navigation.navigate("Login")}
-            className="mt-3"
+            className="mt-3 w-full"
           />
         </Card>
 
