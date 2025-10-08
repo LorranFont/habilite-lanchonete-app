@@ -123,12 +123,12 @@ export function MenuScreen({ navigation }: any) {
   return (
     <View className="flex-1 bg-gray-50">
       {/* HEADER */}
-      <View className="px-4 pt-10 pb-4 flex-row items-center justify-between bg-white border-b border-gray-100">
+      <View className="px-4 pt-10 pb-4 flex-row items-center justify-between bg-[#731906] border-b border-gray-100">
   <View>
     <Text className="text-xs text-gray-500">
       Bem-vindo{userName ? "," : ""}
     </Text>
-    <Text className="text-2xl font-extrabold text-habilite-primary">
+    <Text className="text-2xl font-extrabold text-white">
       {userName ?? "Aluno Habilite"}
     </Text>
   </View>
