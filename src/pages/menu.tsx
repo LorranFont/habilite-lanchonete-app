@@ -124,40 +124,40 @@ export function MenuScreen({ navigation }: any) {
     <View className="flex-1 bg-gray-50">
       {/* HEADER */}
       <View className="px-4 pt-10 pb-4 flex-row items-center justify-between bg-white border-b border-gray-100">
-        <View>
-          <Text className="text-xs text-gray-500">
-            Bem-vindo{userName ? "," : ""}
-          </Text>
-          <Text className="text-2xl font-extrabold text-habilite-primary">
-            {userName ?? "Aluno Habilite"}
+  <View>
+    <Text className="text-xs text-gray-500">
+      Bem-vindo{userName ? "," : ""}
+    </Text>
+    <Text className="text-2xl font-extrabold text-habilite-primary">
+      {userName ?? "Aluno Habilite"}
+    </Text>
+  </View>
+
+  <View className="flex-row items-center gap-2">
+    {/* Meus Pedidos */}
+    <Pressable
+      onPress={() => navigation.navigate("Orders")}
+      className="p-2 rounded-2xl border border-gray-300 bg-white active:opacity-80"
+    >
+      <Ionicons name="document-text-outline" size={20} color="#111827" />
+    </Pressable>
+
+    {/* Carrinho */}
+    <Pressable
+      onPress={() => navigation.navigate("Cart")}
+      className="relative p-2 rounded-2xl bg-habilite-accent active:opacity-90"
+    >
+      <Ionicons name="cart" size={22} color="#black" />
+      {totalQty > 0 && (
+        <View className="absolute -top-1 -right-1 bg-white rounded-full px-2 py-0.5">
+          <Text className="text-habilite-accent text-xs font-extrabold">
+            {totalQty}
           </Text>
         </View>
-
-        <View className="flex-row items-center gap-2">
-          <Pressable
-            onPress={() => navigation.navigate("Cart")}
-            className="relative p-2 rounded-2xl bg-habilite-accent active:opacity-90"
-          >
-            <Ionicons name="cart" size={22} color="black" />
-            {totalQty > 0 && (
-              <View className="absolute -top-1 -right-1 bg-white rounded-full px-2 py-0.5">
-                <Text className="text-habilite-accent text-xs font-extrabold">
-                  {totalQty}
-                </Text>
-              </View>
-            )}
-          </Pressable>
-
-          <Pressable
-            onPress={handleLogout}
-            className="px-3 py-2 rounded-2xl border border-gray-300 bg-white active:opacity-80"
-          >
-            <Text className="text-sm font-semibold text-habilite-primary">
-              Sair
-            </Text>
-          </Pressable>
-        </View>
-      </View>
+      )}
+    </Pressable>
+  </View>
+</View>
 
       {/* Busca e categorias */}
       <View className="px-4 mt-3">

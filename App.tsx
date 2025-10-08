@@ -8,6 +8,8 @@ import { MenuScreen } from "./src/pages/menu";
 import { CartProvider } from "./src/context/cart";
 import { CartScreen } from "./src/pages/cart";
 import { CheckoutScreen } from "./src/pages/checkout";
+import { SuccessScreen } from "./src/pages/success";
+import { OrdersScreen } from "./src/pages/orders";
 
 
 
@@ -18,6 +20,8 @@ export type RootStackParamList = {
   Menu: undefined;
   Cart: undefined;
   Checkout: undefined;
+  Success: { orderId: string } | undefined;
+  Orders: undefined;      
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -36,6 +40,8 @@ export default function App() {
           <Stack.Screen name="Menu" component={MenuScreen} />
           <Stack.Screen name="Cart" component={CartScreen} />
           <Stack.Screen name="Checkout" component={CheckoutScreen} />
+          <Stack.Screen name="Success" component={SuccessScreen} />
+          <Stack.Screen name="Orders" component={OrdersScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </CartProvider>

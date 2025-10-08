@@ -10,6 +10,7 @@ import {
 import { useCart } from "../context/cart";
 import { Card, Button, Field, Title, Subtitle } from "../components/ui";
 import { brl } from "../utils/money";
+import { genOrderId, saveOrder } from "../utils/orders";
 
 type PaymentMethod = "pix" | "dinheiro" | "cartao";
 
@@ -45,16 +46,30 @@ export function CheckoutScreen({ navigation }: any) {
     try {
       setEnviando(true);
 
-      await new Promise((resolve) => setTimeout(resolve, 900));
+      const orderId = genOrderId();
+      await saveOrder({
+        id: orderId,
+        createdAt: Date.now(),
+        customer: nome,
+        payment: pagamento!, // validado
+        total: totalPrice,
+        items: items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+        })),
+        note: observacao || undefined,
+        status: "aguardando", // <-- aqui
+      });
 
       clear();
-      Alert.alert("Pedido enviado 🎉", "Seu pedido foi recebido!", [
-        {
-          text: "OK",
-          onPress: () =>
-            navigation.reset({ index: 0, routes: [{ name: "Menu" }] }),
-        },
-      ]);
+
+      // manda pra tela de sucesso com o código do pedido
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Success", params: { orderId } }],
+      });
     } finally {
       setEnviando(false);
     }
@@ -68,13 +83,17 @@ export function CheckoutScreen({ navigation }: any) {
       </View>
 
       <Card className="mb-4">
-        <Text className="text-gray-700 font-semibold mb-3">Resumo do pedido</Text>
+        <Text className="text-gray-700 font-semibold mb-3">
+          Resumo do pedido
+        </Text>
         {items.map((it) => (
           <View
             key={String(it.id)}
             className="flex-row items-center justify-between mb-2"
           >
-            <Text className="text-gray-800">{it.quantity}× {it.name}</Text>
+            <Text className="text-gray-800">
+              {it.quantity}× {it.name}
+            </Text>
             <Text className="text-gray-600">{brl(it.price * it.quantity)}</Text>
           </View>
         ))}
@@ -85,12 +104,17 @@ export function CheckoutScreen({ navigation }: any) {
       </Card>
 
       <Card className="mb-4">
-        <Text className="text-gray-700 font-semibold mb-3">Dados do cliente e observações</Text>
+        <Text className="text-gray-700 font-semibold mb-3">
+          Dados do cliente e observações
+        </Text>
+
         <Field label="Seu nome">
           <TextInput
             value={nome}
             onChangeText={setNome}
             placeholder="Ex.: Lorran"
+            selectionColor="#e11d48"
+            placeholderTextColor="#9CA3AF"
             className="border rounded-2xl px-4 py-3 bg-white border-gray-300"
           />
         </Field>
@@ -100,6 +124,10 @@ export function CheckoutScreen({ navigation }: any) {
             value={observacao}
             onChangeText={setObservacao}
             placeholder="Ex.: Sem glúten"
+            selectionColor="#e11d48"
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={3}
             className="border rounded-2xl px-4 py-3 bg-white border-gray-300"
           />
         </Field>
@@ -119,7 +147,7 @@ export function CheckoutScreen({ navigation }: any) {
                 className={`px-4 py-2 rounded-2xl border ${
                   isActive
                     ? "bg-habilite-accent border-habilite-accent"
-                    : "bg- border-gray-300"
+                    : "bg-white border-gray-300"
                 }`}
               >
                 <Text
