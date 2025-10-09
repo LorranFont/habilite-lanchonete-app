@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -7,15 +7,20 @@ import {
   Text,
   TextInput,
   View,
+  Animated,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import { Ionicons } from "@expo/vector-icons";
-
 import { Card, Button } from "../components/ui";
 import { useCart } from "../context/cart";
 import { brl } from "../utils/money";
 import { getMenuCategories, MENU_ITEMS, MenuItem } from "../utils/menu";
+import { ProductSheet } from "../components/ui/ProductSheet";
+
+const HEADER_MAX = 120;
+const HEADER_MIN = 90;
+const HEADER_DELTA = HEADER_MAX - HEADER_MIN;
 
 type StoredUser = { nome: string; email: string };
 
@@ -29,7 +34,18 @@ export function MenuScreen({ navigation }: any) {
   const [search, setSearch] = useState("");
   const [userName, setUserName] = useState<string | null>(null);
 
-  // simula “carregar do servidor”
+  // bottom sheet
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [selectedItem, setSelected] = useState<MenuItem | null>(null);
+  const openSheet = (item: MenuItem) => {
+    setSelected(item);
+    setSheetOpen(true);
+  };
+  const closeSheet = () => setSheetOpen(false);
+
+  // header anim
+  const scrollY = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setAllProducts(MENU_ITEMS);
@@ -38,7 +54,6 @@ export function MenuScreen({ navigation }: any) {
     return () => clearTimeout(timeout);
   }, []);
 
-  // pega o nome salvo (SecureStore) quando a tela volta ao foco
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
@@ -62,10 +77,7 @@ export function MenuScreen({ navigation }: any) {
     }, [])
   );
 
-  const categories = useMemo(
-    () => getMenuCategories(allProducts),
-    [allProducts]
-  );
+  const categories = useMemo(() => getMenuCategories(allProducts), [allProducts]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -82,16 +94,19 @@ export function MenuScreen({ navigation }: any) {
   }, [allProducts, search, selectedCategory]);
 
   const handleAddToCart = useCallback(
-    (product: MenuItem) => {
+    (product: MenuItem, qty: number = 1) => {
       addItem({
-        id: product.id, // MenuItem.id já é number no util
+        id: product.id,
         name: product.name,
         price: product.price,
         image: product.image ?? "",
-        quantity: 1,
+        quantity: qty,
         category: product.category,
       });
-      Alert.alert("Adicionado", `${product.name} foi para o carrinho ✅`);
+      // Alerta só quando veio do botão rápido (não do sheet, que já fecha)
+      if (qty === 1) {
+        Alert.alert("Adicionado", `${product.name} foi para o carrinho ✅`);
+      }
     },
     [addItem]
   );
@@ -120,137 +135,196 @@ export function MenuScreen({ navigation }: any) {
     );
   }
 
+  // interpolations
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, HEADER_DELTA],
+    outputRange: [HEADER_MAX, HEADER_MIN],
+    extrapolate: "clamp",
+  });
+  const titleSize = scrollY.interpolate({
+    inputRange: [0, HEADER_DELTA],
+    outputRange: [22, 18],
+    extrapolate: "clamp",
+  });
+  const shadowOpacity = scrollY.interpolate({
+    inputRange: [0, HEADER_DELTA],
+    outputRange: [0, 0.12],
+    extrapolate: "clamp",
+  });
+  //cor DO HEADER
+  const headerBg = "rgb(115, 25, 6)";
+
   return (
     <View className="flex-1 bg-gray-50">
-      {/* HEADER */}
-      <View className="px-4 pt-10 pb-4 flex-row items-center justify-between bg-[#731906] border-b border-gray-100">
-  <View>
-    <Text className="text-xs text-gray-500">
-      Bem-vindo{userName ? "," : ""}
-    </Text>
-    <Text className="text-2xl font-extrabold text-white">
-      {userName ?? "Aluno Habilite"}
-    </Text>
-  </View>
-
-  <View className="flex-row items-center gap-2">
-    {/* Meus Pedidos */}
-    <Pressable
-      onPress={() => navigation.navigate("Orders")}
-      className="p-2 rounded-2xl border border-gray-300 bg-white active:opacity-80"
-    >
-      <Ionicons name="document-text-outline" size={20} color="#111827" />
-    </Pressable>
-
-    {/* Carrinho */}
-    <Pressable
-      onPress={() => navigation.navigate("Cart")}
-      className="relative p-2 rounded-2xl bg-habilite-accent active:opacity-90"
-    >
-      <Ionicons name="cart" size={22} color="#black" />
-      {totalQty > 0 && (
-        <View className="absolute -top-1 -right-1 bg-white rounded-full px-2 py-0.5">
-          <Text className="text-habilite-accent text-xs font-extrabold">
-            {totalQty}
-          </Text>
-        </View>
-      )}
-    </Pressable>
-  </View>
-</View>
-
-      {/* Busca e categorias */}
-      <View className="px-4 mt-3">
-        <Card className="mb-4">
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Buscar por lanche, bebida ou sobremesa"
-            placeholderTextColor="#9CA3AF"
-            className="border border-gray-300 rounded-2xl px-4 py-3 bg-white"
-          />
-
-          <View className="flex-row flex-wrap gap-2 mt-4">
-            {categories.map((category) => {
-              const isActive = category === selectedCategory;
-              return (
-                <Pressable
-                  key={category}
-                  onPress={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-2xl border ${
-                    isActive
-                      ? "bg-habilite-accent border-habilite-accent"
-                      : "bg-white border-gray-300"
-                  }`}
-                >
-                  <Text
-                    className={
-                      isActive
-                        ? "text-black font-semibold"
-                        : "text-gray-600 font-medium"
-                    }
-                  >
-                    {category === "todos"
-                      ? "Todos"
-                      : category.charAt(0).toUpperCase() + category.slice(1)}
-                  </Text>
-                </Pressable>
-              );
-            })}
+      {/* HEADER FIXO POR CIMA */}
+      <Animated.View
+        style={{
+          height: headerHeight,
+          paddingHorizontal: 16,
+          paddingTop: 40,
+          paddingBottom: 12,
+          backgroundColor: headerBg,
+          borderBottomLeftRadius: 24,
+          borderBottomRightRadius: 24,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          shadowColor: "#000",
+          shadowOpacity: (shadowOpacity as unknown as number) || 0.08,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 4,
+        }}
+      >
+        <View className="flex-row items-center justify-between">
+          <View>
+            <Text className="text-white/90 text-xs">
+              Bem-vindo{userName ? "," : ""}
+            </Text>
+            <Animated.Text
+              style={{ fontSize: titleSize, fontWeight: "800", color: "white" }}
+            >
+              {userName ?? "Aluno Habilite"}
+            </Animated.Text>
           </View>
-        </Card>
 
-        {/* Lista de itens */}
-        {filtered.length === 0 ? (
+          <View className="flex-row items-center gap-3">
+            <Pressable
+              onPress={() => navigation.navigate("Orders")}
+              className="p-2 rounded-2xl bg-white/20 active:opacity-80"
+            >
+              <Ionicons name="document-text-outline" size={20} color="#fff" />
+            </Pressable>
+
+            <Pressable
+              onPress={() => navigation.navigate("Cart")}
+              className="relative p-2 rounded-2xl bg-white active:opacity-90"
+            >
+              <Ionicons name="cart" size={22} color="#e11d48" />
+              {totalQty > 0 && (
+                <View className="absolute -top-1 -right-1 bg-[#da0000] rounded-full px-2 py-0.5">
+                  <Text className="text-white text-xs font-extrabold">
+                    {totalQty}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+
+            <Pressable
+              onPress={handleLogout}
+              className="p-2 rounded-2xl bg-white/20 active:opacity-80"
+            >
+              <Ionicons name="log-out-outline" size={20} color="#fff" />
+            </Pressable>
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* LISTA DE ITEMS */}
+      <Animated.FlatList
+        contentContainerStyle={{
+          paddingTop: HEADER_MAX + 16,
+          paddingHorizontal: 16,
+          paddingBottom: 32,
+        }}
+        data={filtered}
+        keyExtractor={(item) => String(item.id)}
+        ItemSeparatorComponent={() => <View className="h-3" />}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        renderItem={({ item }) => (
+          <Card className="overflow-hidden">
+            <Pressable onPress={() => openSheet(item)} className="flex-row gap-3">
+              {item.image ? (
+                <View className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 mr-1.5">
+                  <Image
+                    source={{ uri: item.image?.trim() || "https://picsum.photos/seed/food/200/200" }}
+                    className="w-full h-full"
+                  />
+                </View>
+              ) : null}
+
+              <View className="flex-1 pr-3">
+                <Text className="text-base font-semibold text-gray-800" numberOfLines={1}>
+                  {item.name}
+                </Text>
+                {!!item.description && (
+                  <Text className="text-gray-500 mt-1" numberOfLines={2}>
+                    {item.description}
+                  </Text>
+                )}
+                <Text className="text-habilite-primary font-extrabold mt-2">
+                  {brl(item.price)}
+                </Text>
+              </View>
+
+              <View className="justify-center">
+                <Button 
+                  title="Adicionar"
+                  className="px-4"
+                  onPress={() => handleAddToCart(item, 1)}
+                />
+              </View>
+            </Pressable>
+          </Card>
+        )}
+        ListHeaderComponent={
+          <Card className="mb-4">
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Buscar por lanche, bebida ou sobremesa"
+              placeholderTextColor="#9CA3AF"
+              className="border border-gray-300 rounded-2xl px-4 py-3 bg-white"
+            />
+            <View className="flex-row flex-wrap gap-2 mt-4">
+              {categories.map((category) => {
+                const isActive = category === selectedCategory;
+                return (
+                  <Pressable
+                    key={category}
+                    onPress={() => setSelectedCategory(category)}
+                    className={`px-4 py-2 rounded-2xl border ${
+                      isActive
+                        ? "bg-habilite-accent border-habilite-accent"
+                        : "bg-white border-gray-300"
+                    }`}
+                  >
+                    <Text
+                      className={
+                        isActive ? "text-black font-semibold" : "text-habilite-primary"
+                      }
+                    >
+                      {category === "todos"
+                        ? "Todos"
+                        : category.charAt(0).toUpperCase() + category.slice(1)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Card>
+        }
+        ListEmptyComponent={
           <Card className="items-center">
             <Text className="text-gray-500 text-center">
               Não encontramos itens com esses filtros. Tente outra busca.
             </Text>
           </Card>
-        ) : (
-          <View className="pb-10">
-            {filtered.map((item) => (
-              <Card key={item.id} className="mb-3">
-                <View className="flex-row items-start justify-between">
-                  {/* thumb opcional */}
-                  {item.image ? (
-                    <View className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 mr-3">
-                      <Image
-                        source={{
-                          uri:
-                            item.image?.trim() ||
-                            "https://picsum.photos/seed/food/200/200",
-                        }}
-                        className="w-full h-full"
-                      />
-                    </View>
-                  ) : null}
+        }
+      />
 
-                  <View className="flex-1 pr-3">
-                    <Text className="text-lg font-semibold text-gray-800">
-                      {item.name}
-                    </Text>
-                    {!!item.description && (
-                      <Text className="text-gray-500 mt-1" numberOfLines={2}>
-                        {item.description}
-                      </Text>
-                    )}
-                    <Text className="text-habilite-primary font-bold mt-2">
-                      {brl(item.price)}
-                    </Text>
-                  </View>
-
-                  <Button
-                    title="Adicionar"
-                    className="w-32"
-                    onPress={() => handleAddToCart(item)}
-                  />
-                </View>
-              </Card>
-            ))}
-          </View>
-        )}
-      </View>
+      {/*RENDERIZA O BOTTOM SHEET */}
+      <ProductSheet
+        visible={sheetOpen}
+        item={selectedItem}
+        onClose={closeSheet}
+        onAdd={(quantity) => selectedItem && handleAddToCart(selectedItem, quantity)}
+      />
     </View>
   );
 }

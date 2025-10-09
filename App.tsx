@@ -32,15 +32,24 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="Home"
-          screenOptions={{ headerShown: false }}
+          screenOptions={{ headerShown: false,
+            animation: "slide_from_right",
+            gestureEnabled: true,
+           }}
         >
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="Menu" component={MenuScreen} />
-          <Stack.Screen name="Cart" component={CartScreen} />
-          <Stack.Screen name="Checkout" component={CheckoutScreen} />
-          <Stack.Screen name="Success" component={SuccessScreen} />
+          <Stack.Screen name="Cart" component={CartScreen} 
+          options={{animation: "slide_from_bottom"}}
+          />
+          <Stack.Screen name="Checkout" component={CheckoutScreen}
+          options={{animation: "slide_from_bottom"}}
+          />
+          <Stack.Screen name="Success" component={SuccessScreen} 
+          options={{animation: "fade_from_bottom"}}
+          />
           <Stack.Screen name="Orders" component={OrdersScreen} />
         </Stack.Navigator>
       </NavigationContainer>
