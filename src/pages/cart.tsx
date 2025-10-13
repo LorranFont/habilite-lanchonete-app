@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text, Pressable, FlatList } from "react-native";
 import { useCart } from "../context/cart";
 import { Card, Button } from "../components/ui";

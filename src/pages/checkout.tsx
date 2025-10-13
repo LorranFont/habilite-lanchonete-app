@@ -60,7 +60,7 @@ export function CheckoutScreen({ navigation }: any) {
           quantity: i.quantity,
         })),
         note: observacao || undefined,
-        status: "aguardando", // <-- aqui
+        status: "aguardando", // aqui
       });
 
       clear();
