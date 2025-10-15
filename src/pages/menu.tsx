@@ -134,11 +134,6 @@ export function MenuScreen({ navigation }: any) {
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       showBar(product.name, qty);
-
-      // se quiser manter alert no “add 1” rápido, descomenta:
-      // if (qty === 1) {
-      //   Alert.alert("Adicionado", `${product.name} foi para o carrinho ✅`);
-      // }
     },
     [addItem]
   );
