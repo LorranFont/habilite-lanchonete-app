@@ -1,22 +1,12 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, TextInput, Pressable, Animated, KeyboardAvoidingView, Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import {
-  Field,
-  Title,
-  Subtitle,
-  Button,
-  Card,
-  Caption,
-} from "../components/ui";
+import { Card, Field, Button } from "../components/ui";
+
+const BRAND = {
+  primary: "#731906",
+  accent: "#da0000",
+};
 
 type StoredUser = { nome: string; email: string; senha: string };
 
@@ -30,48 +20,45 @@ export function RegisterScreen({ navigation }: any) {
   const [showPwd2, setShowPwd2] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const [erros, setErros] = useState<{
-    nome?: string;
-    email?: string;
-    senha?: string;
-    confirmar?: string;
-  }>({});
+  const [erros, setErros] = useState<{ nome?: string; email?: string; senha?: string; confirmar?: string }>({});
+
+  const headerY = useRef(new Animated.Value(20)).current;
+  useEffect(() => {
+    Animated.spring(headerY, { toValue: 0, useNativeDriver: true, friction: 7 }).start();
+  }, [headerY]);
 
   function validate() {
     const e: typeof erros = {};
-    if (!nome.trim()) e.nome = "Informe seu nome.";
-    if (!email.trim()) e.email = "Informe seu e-mail.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      e.email = "E-mail inválido.";
-    if (!senha.trim()) e.senha = "Crie uma senha.";
-    else if (senha.length < 6) e.senha = "Mínimo de 6 caracteres.";
-    if (!confirmar.trim()) e.confirmar = "Confirme a senha.";
-    else if (confirmar !== senha) e.confirmar = "As senhas não conferem.";
+    if (!nome.trim()) e.nome = "Nome é obrigatório.";
+    if (!email.trim()) e.email = "Email é obrigatório.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Email inválido.";
+    if (!senha.trim()) e.senha = "Senha é obrigatória.";
+    else if (senha.length < 6) e.senha = "A senha deve ter pelo menos 6 caracteres.";
+    if (!confirmar.trim()) e.confirmar = "Confirmação é obrigatória.";
+    else if (confirmar !== senha) e.confirmar = "As senhas não coincidem.";
     setErros(e);
     return Object.keys(e).length === 0;
+  }
+
+  async function checkEmailExists() {
+    const raw = await SecureStore.getItemAsync("user");
+    if (!raw) return false;
+    const saved: StoredUser = JSON.parse(raw);
+    return saved.email.trim().toLowerCase() === email.trim().toLowerCase();
   }
 
   async function handleRegister() {
     if (!validate()) return;
     setSubmitting(true);
     try {
-      const raw = await SecureStore.getItemAsync("user");
-      if (raw) {
-        const saved: StoredUser = JSON.parse(raw);
-        if (saved.email.trim().toLowerCase() === email.trim().toLowerCase()) {
-          Alert.alert("Email já cadastrado.", "Tente outro email.");
-          return;
-        }
+      if (await checkEmailExists()) {
+        alert("Email já cadastrado. Tente outro.");
+        return;
       }
-
-      const user: StoredUser = {
-        nome: nome.trim(),
-        email: email.trim().toLowerCase(),
-        senha,
-      };
+      const user: StoredUser = { nome, email, senha };
       await SecureStore.setItemAsync("user", JSON.stringify(user));
-      Alert.alert("Cadastro realizado com sucesso!");
-      navigation.reset({ index: 0, routes: [{ name: "Menu" }] });
+      alert("Cadastro realizado com sucesso!");
+      navigation.reset({ index: 0, routes: [{ name: "Home" }] }); // passa pelo Splash
     } finally {
       setSubmitting(false);
     }
@@ -79,30 +66,37 @@ export function RegisterScreen({ navigation }: any) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.select({ ios: "padding", android: undefined })}
+      behavior={Platform.select({ ios: "padding", android: "height" })}
+      keyboardVerticalOffset={80}
       className="flex-1 bg-gray-50"
     >
-      <View className="flex-1 px-6 pt-16">
-        {/* Header */}
-        <View className="mb-10">
-          <Title>Criar conta ✍️</Title>
-          <Subtitle>Cadastre-se para pedir na lanchonete Habilite</Subtitle>
-        </View>
+      {/* Header curvado */}
+      <Animated.View
+        style={{
+          transform: [{ translateY: headerY }],
+          backgroundColor: BRAND.primary,
+          paddingHorizontal: 20,
+          paddingTop: 48,
+          paddingBottom: 24,
+          borderBottomLeftRadius: 28,
+          borderBottomRightRadius: 28,
+        }}
+      >
+        <Text className="text-white/90 text-xs">Bora começar 🚀</Text>
+        <Text className="text-white text-2xl font-extrabold mt-1">Criar conta</Text>
+      </Animated.View>
 
-        <Card>
+      <View className="flex-1 px-5 pt-6">
+        <Card className="p-5">
           <Field label="Nome" error={erros.nome}>
             <TextInput
               value={nome}
               onChangeText={(t) => {
                 setNome(t);
-                if (erros.nome) setErros((p) => ({ ...p, nome: undefined }));
+                if (erros.nome) setErros((e) => ({ ...e, nome: undefined }));
               }}
               placeholder="Seu nome completo"
-              className={`border rounded-2xl px-4 py-3 bg-white ${
-                erros.nome
-                  ? "border-red-500"
-                  : "border-gray-300 focus:border-habilite-accent"
-              }`}
+              className={`border rounded-2xl px-4 py-3 bg-white ${erros.nome ? "border-red-500" : "border-gray-300"}`}
             />
           </Field>
 
@@ -111,41 +105,29 @@ export function RegisterScreen({ navigation }: any) {
               value={email}
               onChangeText={(t) => {
                 setEmail(t);
-                if (erros.email) setErros((p) => ({ ...p, email: undefined }));
+                if (erros.email) setErros((e) => ({ ...e, email: undefined }));
               }}
               placeholder="voce@email.com"
-              keyboardType="email-address"
               autoCapitalize="none"
-              className={`border rounded-2xl px-4 py-3 bg-white ${
-                erros.email
-                  ? "border-red-500"
-                  : "border-gray-300 focus:border-habilite-accent"
-              }`}
+              keyboardType="email-address"
+              className={`border rounded-2xl px-4 py-3 bg-white ${erros.email ? "border-red-500" : "border-gray-300"}`}
             />
           </Field>
 
           <Field label="Senha" error={erros.senha}>
-            <View
-              className={`flex-row items-center border rounded-2xl px-4 bg-white ${
-                erros.senha ? "border-red-500" : "border-gray-300"
-              }`}
-            >
+            <View className={`flex-row items-center rounded-2xl px-4 border bg-white ${erros.senha ? "border-red-500" : "border-gray-300"}`}>
               <TextInput
                 value={senha}
                 onChangeText={(t) => {
                   setSenha(t);
-                  if (erros.senha)
-                    setErros((p) => ({ ...p, senha: undefined }));
+                  if (erros.senha) setErros((e) => ({ ...e, senha: undefined }));
                 }}
                 placeholder="••••••••"
                 secureTextEntry={!showPwd}
                 className="flex-1 py-3"
               />
-              <Pressable
-                onPress={() => setShowPwd((s) => !s)}
-                className="pl-3 py-2 active:opacity-80"
-              >
-                <Text className="text-habilite-accent font-semibold">
+              <Pressable onPress={() => setShowPwd((s) => !s)} className="pl-3 py-2 active:opacity-80">
+                <Text style={{ color: BRAND.accent }} className="font-semibold">
                   {showPwd ? "Ocultar" : "Mostrar"}
                 </Text>
               </Pressable>
@@ -153,27 +135,19 @@ export function RegisterScreen({ navigation }: any) {
           </Field>
 
           <Field label="Confirmar senha" error={erros.confirmar}>
-            <View
-              className={`flex-row items-center border rounded-2xl px-4 bg-white ${
-                erros.confirmar ? "border-red-500" : "border-gray-300"
-              }`}
-            >
+            <View className={`flex-row items-center rounded-2xl px-4 border bg-white ${erros.confirmar ? "border-red-500" : "border-gray-300"}`}>
               <TextInput
                 value={confirmar}
                 onChangeText={(t) => {
                   setConfirmar(t);
-                  if (erros.confirmar)
-                    setErros((p) => ({ ...p, confirmar: undefined }));
+                  if (erros.confirmar) setErros((e) => ({ ...e, confirmar: undefined }));
                 }}
                 placeholder="••••••••"
                 secureTextEntry={!showPwd2}
                 className="flex-1 py-3"
               />
-              <Pressable
-                onPress={() => setShowPwd2((s) => !s)}
-                className="pl-3 py-2 active:opacity-80"
-              >
-                <Text className="text-habilite-accent font-semibold">
+              <Pressable onPress={() => setShowPwd2((s) => !s)} className="pl-3 py-2 active:opacity-80">
+                <Text style={{ color: BRAND.accent }} className="font-semibold">
                   {showPwd2 ? "Ocultar" : "Mostrar"}
                 </Text>
               </Pressable>
@@ -181,26 +155,24 @@ export function RegisterScreen({ navigation }: any) {
           </Field>
 
           <Button
-            title={submitting ? "Salvando..." : "Criar conta"}
-            loading={submitting}
+            title={submitting ? "Criando..." : "Criar conta"}
             onPress={handleRegister}
-            className="mt-2 w-full"
+            loading={submitting}
+            className="mt-2"
           />
 
-          <Button
-            title="Já tem conta? Entrar"
-            variant="outline"
+          <Pressable
             onPress={() => navigation.navigate("Login")}
-            className="mt-3 w-full"
-          />
+            className="mt-3 rounded-2xl px-4 py-3 items-center border border-gray-300 active:opacity-80"
+          >
+            <Text className="text-gray-800 font-semibold">Já tenho conta</Text>
+          </Pressable>
         </Card>
 
         <View className="mt-8 items-center">
-          <Caption>Autoescola Habilite • Lanchonete</Caption>
+          <Text className="text-gray-400 text-xs">Autoescola Habilite • Lanchonete</Text>
         </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
-
-export default RegisterScreen;

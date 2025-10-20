@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useMemo,
@@ -11,7 +11,7 @@ export type Product = {
   name: string;
   price: number;
   image: string;
-  quantity: number;
+  quantity: number; 
   category: string;
 };
 
@@ -20,7 +20,7 @@ export type CartItem = Product & { quantity: number };
 type CartState = { items: Record<string, CartItem> };
 
 type Action =
-  | { type: "add"; payload: Product }
+  | { type: "add"; payload: Product & { qty?: number } } 
   | { type: "inc"; payload: { id: string } }
   | { type: "dec"; payload: { id: string } }
   | { type: "remove"; payload: { id: string } }
@@ -30,7 +30,7 @@ const CartContext = createContext<{
   items: CartItem[];
   totalQty: number;
   totalPrice: number;
-  addItem: (p: Product) => void;
+  addItem: (p: Product, qty?: number) => void; 
   inc: (id: string) => void;
   dec: (id: string) => void;
   remove: (id: string) => void;
@@ -41,16 +41,28 @@ function reducer(state: CartState, action: Action): CartState {
   switch (action.type) {
     case "add": {
       const p = action.payload;
+      const addBy = Math.max(1, p.qty ?? 1); // <-- usa qty do payload
       const key = String(p.id);
       const existing = state.items[key];
-      const qty = existing ? existing.quantity + 1 : 1;
-      return { items: { ...state.items, [key]: { ...p, quantity: qty } } };
+      const qty = existing ? existing.quantity + addBy : addBy;
+      // guarda o item com quantity atualizada
+      return {
+        items: {
+          ...state.items,
+          [key]: { ...p, quantity: qty },
+        },
+      };
     }
     case "inc": {
       const { id } = action.payload;
       const it = state.items[id];
       if (!it) return state;
-      return { items: { ...state.items, [id]: { ...it, quantity: it.quantity + 1 } } };
+      return {
+        items: {
+          ...state.items,
+          [id]: { ...it, quantity: it.quantity + 1 },
+        },
+      };
     }
     case "dec": {
       const { id } = action.payload;
@@ -61,7 +73,9 @@ function reducer(state: CartState, action: Action): CartState {
         const { [id]: _drop, ...rest } = state.items;
         return { items: rest };
       }
-      return { items: { ...state.items, [id]: { ...it, quantity: next } } };
+      return {
+        items: { ...state.items, [id]: { ...it, quantity: next } },
+      };
     }
     case "remove": {
       const { id } = action.payload;
@@ -82,11 +96,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const items = Object.values(state.items);
     const totalQty = items.reduce((s, i) => s + i.quantity, 0);
     const totalPrice = items.reduce((s, i) => s + i.quantity * i.price, 0);
+
     return {
       items,
       totalQty,
       totalPrice,
-      addItem: (p: Product) => dispatch({ type: "add", payload: p }),
+      addItem: (p: Product, qty?: number) =>
+        dispatch({ type: "add", payload: { ...p, qty } }), // <-- passa qty
       inc: (id: string) => dispatch({ type: "inc", payload: { id } }),
       dec: (id: string) => dispatch({ type: "dec", payload: { id } }),
       remove: (id: string) => dispatch({ type: "remove", payload: { id } }),

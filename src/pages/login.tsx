@@ -1,28 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   Pressable,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import {
-  Field,
-  Title,
-  Subtitle,
-  Button,
-  Card,
-  Caption,
-} from "../components/ui";
+import { Field, Card, Button } from "../components/ui";
 
-type StoredUser = {
-  nome: string;
-  email: string;
-  senha: string;
+const BRAND = {
+  primary: "#731906",
+  accent: "#da0000",
 };
+
+type StoredUser = { nome: string; email: string; senha: string };
 
 export function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
@@ -31,46 +25,42 @@ export function LoginScreen({ navigation }: any) {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; senha?: string }>({});
 
+  const headerY = useRef(new Animated.Value(20)).current;
+  useEffect(() => {
+    Animated.spring(headerY, { toValue: 0, useNativeDriver: true, friction: 7 }).start();
+  }, [headerY]);
+
   function validate() {
     const e: typeof errors = {};
-
     if (!email.trim()) e.email = "Email é obrigatório.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      e.email = "Email inválido.";
-
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Email inválido.";
     if (!senha.trim()) e.senha = "Senha é obrigatória.";
-    else if (senha.length < 6)
-      e.senha = "A senha deve ter pelo menos 6 caracteres.";
-
+    else if (senha.length < 6) e.senha = "Mínimo de 6 caracteres.";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
   async function handleLogin() {
     if (!validate()) return;
-
     setSubmitting(true);
     try {
       const raw = await SecureStore.getItemAsync("user");
       if (!raw) {
-        Alert.alert("Nenhum cadastro", "Crie sua conta para continuar.", [
-          { text: "Cadastrar", onPress: () => navigation.navigate("Register") },
-        ]);
+        alert("Nenhum cadastro encontrado. Crie sua conta.");
+        navigation.navigate("Register");
         return;
       }
-
       const saved: StoredUser = JSON.parse(raw);
       const ok =
         saved.email.trim().toLowerCase() === email.trim().toLowerCase() &&
         saved.senha === senha;
-
       if (!ok) {
-        Alert.alert("Credenciais inválidas", "Confira seu e-mail e senha.");
+        alert("Credenciais inválidas. Confira seu e-mail e senha.");
         return;
       }
-
       await SecureStore.setItemAsync("user", JSON.stringify(saved));
-      navigation.reset({ index: 0, routes: [{ name: "Menu" }] });
+      // passa pelo Splash (Home) antes de abrir Menu
+      navigation.reset({ index: 0, routes: [{ name: "Home" }] });
     } finally {
       setSubmitting(false);
     }
@@ -78,38 +68,47 @@ export function LoginScreen({ navigation }: any) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.select({ ios: "padding", android: undefined })}
+      behavior={Platform.select({ ios: "padding", android: "height" })}
+      keyboardVerticalOffset={80}
       className="flex-1 bg-gray-50"
     >
-      <View className="flex-1 px-6 pt-16">
-        <View className="mb-10">
-          <Title>Bem-vindo 👋</Title>
-          <Subtitle>Acesse sua conta da lanchonete Habilite</Subtitle>
-        </View>
+      {/* Header curvado */}
+      <Animated.View
+        style={{
+          transform: [{ translateY: headerY }],
+          backgroundColor: BRAND.primary,
+          paddingHorizontal: 20,
+          paddingTop: 48,
+          paddingBottom: 24,
+          borderBottomLeftRadius: 28,
+          borderBottomRightRadius: 28,
+        }}
+      >
+        <Text className="text-white/90 text-xs">Bem-vindo de volta 👋</Text>
+        <Text className="text-white text-2xl font-extrabold mt-1">Acesse sua conta</Text>
+      </Animated.View>
 
-        <Card>
+      <View className="flex-1 px-5 pt-6">
+        <Card className="p-5">
           <Field label="E-mail" error={errors.email}>
             <TextInput
               value={email}
               onChangeText={(t) => {
                 setEmail(t);
-                if (errors.email)
-                  setErrors((p) => ({ ...p, email: undefined }));
+                if (errors.email) setErrors((e) => ({ ...e, email: undefined }));
               }}
               placeholder="voce@email.com"
-              keyboardType="email-address"
               autoCapitalize="none"
+              keyboardType="email-address"
               className={`border rounded-2xl px-4 py-3 bg-white ${
-                errors.email
-                  ? "border-red-500"
-                  : "border-gray-300 focus:border-habilite-accent"
+                errors.email ? "border-red-500" : "border-gray-300"
               }`}
             />
           </Field>
 
           <Field label="Senha" error={errors.senha}>
             <View
-              className={`flex-row items-center border rounded-2xl px-4 bg-white ${
+              className={`flex-row items-center rounded-2xl px-4 border bg-white ${
                 errors.senha ? "border-red-500" : "border-gray-300"
               }`}
             >
@@ -117,18 +116,14 @@ export function LoginScreen({ navigation }: any) {
                 value={senha}
                 onChangeText={(t) => {
                   setSenha(t);
-                  if (errors.senha)
-                    setErrors((p) => ({ ...p, senha: undefined }));
+                  if (errors.senha) setErrors((e) => ({ ...e, senha: undefined }));
                 }}
                 placeholder="••••••••"
                 secureTextEntry={!showPwd}
                 className="flex-1 py-3"
               />
-              <Pressable
-                onPress={() => setShowPwd((s) => !s)}
-                className="pl-3 py-2 active:opacity-80"
-              >
-                <Text className="text-habilite-accent font-semibold">
+              <Pressable onPress={() => setShowPwd((s) => !s)} className="pl-3 py-2 active:opacity-80">
+                <Text style={{ color: BRAND.accent }} className="font-semibold">
                   {showPwd ? "Ocultar" : "Mostrar"}
                 </Text>
               </Pressable>
@@ -137,31 +132,23 @@ export function LoginScreen({ navigation }: any) {
 
           <Button
             title={submitting ? "Entrando..." : "Entrar"}
-            loading={submitting}
             onPress={handleLogin}
-            className="mt-2 w-full"
+            loading={submitting}
+            className="mt-2"
           />
 
-          <View className="flex-row items-center my-5">
-            <View className="flex-1 h-px bg-gray-200" />
-            <Text className="mx-3 text-gray-400 text-xs">ou</Text>
-            <View className="flex-1 h-px bg-gray-200" />
-          </View>
-
-          <Button
-            title="Criar conta"
-            variant="outline"
+          <Pressable
             onPress={() => navigation.navigate("Register")}
-            className="mt-3 w-full"
-          />
+            className="mt-3 rounded-2xl px-4 py-3 items-center border border-gray-300 active:opacity-80"
+          >
+            <Text className="text-gray-800 font-semibold">Criar conta</Text>
+          </Pressable>
         </Card>
 
         <View className="mt-8 items-center">
-          <Caption>Autoescola Habilite • Lanchonete</Caption>
+          <Text className="text-gray-400 text-xs">Autoescola Habilite • Lanchonete</Text>
         </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
-
-export default LoginScreen;
