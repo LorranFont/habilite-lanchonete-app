@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,10 +11,9 @@ import {
 import * as SecureStore from "expo-secure-store";
 import { Field, Card, Button } from "../components/ui";
 
-// Paleta Habilite
 const BRAND = {
-  primary: "#731906", // vinho/terracota escuro
-  accent:  "#da0000", // coral/verm.
+  primary: "#731906",
+  accent: "#da0000",
 };
 
 type StoredUser = { nome: string; email: string; senha: string };
@@ -26,25 +25,17 @@ export function LoginScreen({ navigation }: any) {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; senha?: string }>({});
 
-  // animação do header (sobe levemente apenas no mount inicial)
-  const headerY = React.useRef(new Animated.Value(20)).current;
-  React.useEffect(() => {
-    Animated.spring(headerY, {
-      toValue: 0,
-      useNativeDriver: true,
-      friction: 7,
-    }).start();
-  }, []);
+  const headerY = useRef(new Animated.Value(20)).current;
+  useEffect(() => {
+    Animated.spring(headerY, { toValue: 0, useNativeDriver: true, friction: 7 }).start();
+  }, [headerY]);
 
   function validate() {
     const e: typeof errors = {};
     if (!email.trim()) e.email = "Email é obrigatório.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      e.email = "Email inválido.";
-
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Email inválido.";
     if (!senha.trim()) e.senha = "Senha é obrigatória.";
     else if (senha.length < 6) e.senha = "Mínimo de 6 caracteres.";
-
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -63,14 +54,13 @@ export function LoginScreen({ navigation }: any) {
       const ok =
         saved.email.trim().toLowerCase() === email.trim().toLowerCase() &&
         saved.senha === senha;
-
       if (!ok) {
         alert("Credenciais inválidas. Confira seu e-mail e senha.");
         return;
       }
-
       await SecureStore.setItemAsync("user", JSON.stringify(saved));
-      navigation.reset({ index: 0, routes: [{ name: "Menu" }] });
+      // passa pelo Splash (Home) antes de abrir Menu
+      navigation.reset({ index: 0, routes: [{ name: "Home" }] });
     } finally {
       setSubmitting(false);
     }
@@ -95,15 +85,11 @@ export function LoginScreen({ navigation }: any) {
         }}
       >
         <Text className="text-white/90 text-xs">Bem-vindo de volta 👋</Text>
-        <Text className="text-white text-2xl font-extrabold mt-1">
-          Acesse sua conta
-        </Text>
+        <Text className="text-white text-2xl font-extrabold mt-1">Acesse sua conta</Text>
       </Animated.View>
 
-      {/* Corpo */}
       <View className="flex-1 px-5 pt-6">
         <Card className="p-5">
-          {/* Email */}
           <Field label="E-mail" error={errors.email}>
             <TextInput
               value={email}
@@ -120,7 +106,6 @@ export function LoginScreen({ navigation }: any) {
             />
           </Field>
 
-          {/* Senha */}
           <Field label="Senha" error={errors.senha}>
             <View
               className={`flex-row items-center rounded-2xl px-4 border bg-white ${
@@ -137,10 +122,7 @@ export function LoginScreen({ navigation }: any) {
                 secureTextEntry={!showPwd}
                 className="flex-1 py-3"
               />
-              <Pressable
-                onPress={() => setShowPwd((s) => !s)}
-                className="pl-3 py-2 active:opacity-80"
-              >
+              <Pressable onPress={() => setShowPwd((s) => !s)} className="pl-3 py-2 active:opacity-80">
                 <Text style={{ color: BRAND.accent }} className="font-semibold">
                   {showPwd ? "Ocultar" : "Mostrar"}
                 </Text>
@@ -148,7 +130,6 @@ export function LoginScreen({ navigation }: any) {
             </View>
           </Field>
 
-          {/* Botões */}
           <Button
             title={submitting ? "Entrando..." : "Entrar"}
             onPress={handleLogin}
@@ -164,11 +145,8 @@ export function LoginScreen({ navigation }: any) {
           </Pressable>
         </Card>
 
-        {/* Rodapé */}
         <View className="mt-8 items-center">
-          <Text className="text-gray-400 text-xs">
-            Autoescola Habilite • Lanchonete
-          </Text>
+          <Text className="text-gray-400 text-xs">Autoescola Habilite • Lanchonete</Text>
         </View>
       </View>
     </KeyboardAvoidingView>

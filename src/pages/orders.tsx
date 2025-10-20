@@ -1,118 +1,208 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable } from "react-native";
-import { getOrders, Order, updateOrderStatus, OrderStatus } from "../utils/orders";
-import { Card } from "../components/ui";
-import { brl } from "../utils/money";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, Text, FlatList, RefreshControl, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Card, Button } from "../components/ui";
+import { getOrders } from "../utils/orders";
 
-function StatusChip({ status }: { status: OrderStatus }) {
-  const styles =
-    status === "aguardando"
-      ? { wrap: "bg-yellow-100 border-yellow-300", text: "text-yellow-800" }
-      : status === "preparo"
-      ? { wrap: "bg-blue-100 border-blue-300", text: "text-blue-800" }
-      : { wrap: "bg-green-100 border-green-300", text: "text-green-800" };
+type OrderItem = {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+};
 
-  const label =
-    status === "aguardando" ? "Aguardando"
-    : status === "preparo"  ? "Em preparo"
-    : "Entregue";
+type Payment = "pix" | "dinheiro" | "cartao";
 
-  return (
-    <View className={`px-2 py-1 rounded-xl border ${styles.wrap}`}>
-      <Text className={`text-xs font-semibold ${styles.text}`}>{label}</Text>
-    </View>
-  );
+type Order = {
+  id: string;
+  createdAt: number;
+  customer: string;
+  payment: Payment;
+  total: number;
+  items: OrderItem[];
+  note?: string;
+  status?: string | null;
+};
+
+// Paleta Habilite
+const BRAND = {
+  primary: "#731906",
+  accent: "#da0000",
+  peach:  "#FFDFB2",
+};
+
+type Status = "aguardando" | "preparando" | "finalizado";
+type StatusInfo = { label: string; bg: string; fg: string };
+
+const STATUS_STYLES: Record<Status, StatusInfo> = {
+  aguardando: { label: "Aguardando", bg: "#FFDFB2", fg: "#731906" },
+  preparando: { label: "Preparando", bg: "#FFE0E0", fg: "#DA0000" },
+  finalizado: { label: "Finalizado", bg: "#E6F5E6", fg: "#166534" },
+};
+
+function normalizeStatus(s?: string | null): Status {
+  if (!s) return "aguardando";
+  const v = s.toLowerCase().trim();
+  if (["lido", "novo", "recebido", "pendente"].includes(v)) return "aguardando";
+  if (["processo", "em processo", "preparo", "preparando", "andamento"].includes(v)) return "preparando";
+  if (["finalizado", "pronto", "concluido", "concluído"].includes(v)) return "finalizado";
+  return "aguardando";
 }
 
-export function OrdersScreen() {
-  const [orders, setOrders] = useState<Order[] | null>(null);
-
-  async function reload() {
-    const all = await getOrders();
-    setOrders(all);
+function formatBRL(n: number) {
+  try {
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+  } catch {
+    return `R$ ${n.toFixed(2)}`.replace(".", ",");
   }
+}
 
-  useEffect(() => {
-    reload();
+function formatDate(ts: number) {
+  const d = new Date(ts);
+  return d.toLocaleString("pt-BR", {
+    day: "2-digit", month: "2-digit", year: "2-digit",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
+
+export function OrdersScreen({ navigation }: any) {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const list = await getOrders();
+      const safe: Order[] = Array.isArray(list) ? list : [];
+      const withStatus = safe.map(o => ({ ...o, status: normalizeStatus(o.status) }));
+      setOrders([...withStatus].reverse()); // mais recentes primeiro
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  if (!orders) {
-    return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <Text className="text-gray-500">Carregando...</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  if (orders.length === 0) {
-    return (
-      <View className="flex-1 items-center justify-center bg-gray-50 px-6">
-        <Text className="text-gray-500 text-center">
-          Você ainda não tem pedidos.
-        </Text>
-      </View>
-    );
-  }
-
-  //ações para simular avanço de status
-  async function setStatus(id: string, status: OrderStatus) {
-    await updateOrderStatus(id, status);
-    await reload();
-  }
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await load();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [load]);
 
   return (
-    <View className="flex-1 bg-gray-50 px-4 pt-8">
-      <Text className="text-2xl font-bold text-habilite-primary mb-4">Meus pedidos</Text>
+    <View className="flex-1 bg-gray-50">
+      {/* HEADER */}
+      <View
+        style={{
+          backgroundColor: BRAND.primary,
+          paddingHorizontal: 16,
+          paddingTop: 44, // deixa respirando sob a status bar
+          paddingBottom: 14,
+          borderBottomLeftRadius: 24,
+          borderBottomRightRadius: 24,
+        }}
+      >
+        <View className="flex-row items-center justify-between">
+          <Pressable
+            onPress={() => navigation.goBack()}
+            className="p-2 rounded-2xl bg-white/15 active:opacity-80"
+          >
+            <Ionicons name="arrow-back" size={20} color="#fff" />
+          </Pressable>
 
-      <FlatList
-        data={orders}
-        keyExtractor={(o) => o.id}
-        ItemSeparatorComponent={() => <View className="h-3" />}
-        renderItem={({ item }) => (
-          <Card>
-            <View className="flex-row items-start justify-between">
-              <View className="flex-1 pr-3">
-                <View className="flex-row items-center justify-between mb-1">
-                  <Text className="font-semibold">{item.id}</Text>
-                  <StatusChip status={item.status} />
+          <Text className="text-white text-xl font-extrabold">Meus pedidos</Text>
+
+          <Pressable
+            onPress={() => navigation.reset({ index: 0, routes: [{ name: "Menu" }] })}
+            className="px-3 py-2 rounded-2xl bg-white active:opacity-90"
+          >
+            <Text style={{ color: BRAND.accent }} className="font-bold">Menu</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* LISTA */}
+      {loading && orders.length === 0 ? (
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-gray-500">Carregando seus pedidos…</Text>
+        </View>
+      ) : orders.length === 0 ? (
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-gray-500 text-center">
+            Você ainda não fez nenhum pedido.
+          </Text>
+          <Button
+            title="Ir ao cardápio"
+            className="mt-4"
+            onPress={() => navigation.reset({ index: 0, routes: [{ name: "Menu" }] })}
+          />
+        </View>
+      ) : (
+        <FlatList
+          contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
+          data={orders}
+          keyExtractor={(o) => o.id}
+          ItemSeparatorComponent={() => <View className="h-3" />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          renderItem={({ item }) => {
+            const st = STATUS_STYLES[normalizeStatus(item.status)];
+            return (
+              <Card>
+                {/* Topo: ID + Data + Status */}
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-1 pr-3">
+                    <Text className="text-sm text-gray-500">#{item.id}</Text>
+                    <Text className="text-gray-400 text-xs">{formatDate(item.createdAt)}</Text>
+                  </View>
+
+                  <View className="px-3 py-1 rounded-full" style={{ backgroundColor: st.bg }}>
+                    <Text className="text-xs font-bold" style={{ color: st.fg }}>
+                      {st.label}
+                    </Text>
+                  </View>
                 </View>
-                <Text className="text-gray-500">
-                  {new Date(item.createdAt).toLocaleString()} • {item.payment.toUpperCase()}
-                </Text>
-                <Text className="text-gray-600 mt-1" numberOfLines={1}>
-                  {item.items.map((i) => `${i.quantity}x ${i.name}`).join(", ")}
-                </Text>
-              </View>
 
-              <Text className="text-habilite-accent font-extrabold">
-                {brl(item.total)}
-              </Text>
-            </View>
+                {/* Itens */}
+                <View className="mt-3">
+                  {item.items.map((it) => (
+                    <View
+                      key={`${item.id}-${it.id}`}
+                      className="flex-row items-center justify-between mb-1"
+                    >
+                      <Text className="text-gray-800">
+                        {it.quantity}× {it.name}
+                      </Text>
+                      <Text className="text-gray-600">
+                        {formatBRL(it.price * it.quantity)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
 
-            {/* Ações de simulação (remova quando integrar a API) */}
-            <View className="flex-row gap-2 mt-3">
-              <Pressable
-                onPress={() => setStatus(item.id, "aguardando")}
-                className="px-3 py-2 rounded-xl border border-gray-300 bg-white active:opacity-80"
-              >
-                <Text className="text-gray-700 text-xs font-semibold">Aguardando</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setStatus(item.id, "preparo")}
-                className="px-3 py-2 rounded-xl border border-blue-300 bg-blue-50 active:opacity-80"
-              >
-                <Text className="text-blue-700 text-xs font-semibold">Em preparo</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setStatus(item.id, "entregue")}
-                className="px-3 py-2 rounded-xl border border-green-300 bg-green-50 active:opacity-80"
-              >
-                <Text className="text-green-700 text-xs font-semibold">Entregue</Text>
-              </Pressable>
-            </View>
-          </Card>
-        )}
-      />
+                {!!item.note && (
+                  <View className="mt-2">
+                    <Text className="text-xs text-gray-500">Obs.: {item.note}</Text>
+                  </View>
+                )}
+
+                {/* Total */}
+                <View className="flex-row items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                  <Text className="font-semibold">Total</Text>
+                  <Text className="font-extrabold">{formatBRL(item.total)}</Text>
+                </View>
+              </Card>
+            );
+          }}
+        />
+      )}
     </View>
   );
 }

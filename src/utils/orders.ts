@@ -1,7 +1,5 @@
 import * as SecureStore from "expo-secure-store";
 
-export type OrderStatus = "aguardando" | "preparo" | "entregue";
-
 export type OrderItem = {
   id: number;
   name: string;
@@ -9,48 +7,60 @@ export type OrderItem = {
   quantity: number;
 };
 
+export type OrderStatus = "lido" | "processo" | "finalizado";
+
 export type Order = {
   id: string;
   createdAt: number;
   customer: string;
-  payment: "pix" | "dinheiro" | "cartao";
   total: number;
+  payment: "pix" | "dinheiro" | "cartao";
   items: OrderItem[];
   note?: string;
-  status: OrderStatus;    
+  status?: OrderStatus;
 };
 
-const KEY = "orders";
+const ORDERS_KEY = "orders";
 
+/** Gera um ID curto e único pro pedido */
+export function genOrderId(): string {
+  const rand = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
+  return `${Date.now().toString().slice(-6)}-${rand}`;
+}
+
+/** Lê todos os pedidos armazenados */
 export async function getOrders(): Promise<Order[]> {
-  const raw = await SecureStore.getItemAsync(KEY);
-  if (!raw) return [];
   try {
-    const arr = JSON.parse(raw) as Order[];
-    // retrocompatibilidade: se não tiver status, marca "aguardando"
-    return arr.map(o => ({ ...o, status: (o as any).status ?? "aguardando" }));
+    const raw = await SecureStore.getItemAsync(ORDERS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as Order[];
+    // garante array válido
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
 }
 
-export async function saveOrder(o: Order) {
+/** Salva (acrescenta) um novo pedido ao armazenamento */
+export async function saveOrder(order: Order): Promise<void> {
   const all = await getOrders();
-  all.unshift(o);
-  await SecureStore.setItemAsync(KEY, JSON.stringify(all));
+  all.push(order);
+  await SecureStore.setItemAsync(ORDERS_KEY, JSON.stringify(all));
 }
 
+/** Atualiza o status de um pedido */
 export async function updateOrderStatus(id: string, status: OrderStatus) {
   const all = await getOrders();
-  const idx = all.findIndex(o => o.id === id);
-  if (idx === -1) return;
-  all[idx] = { ...all[idx], status };
-  await SecureStore.setItemAsync(KEY, JSON.stringify(all));
+  const idx = all.findIndex((o) => o.id === id);
+  if (idx >= 0) {
+    all[idx] = { ...all[idx], status };
+    await SecureStore.setItemAsync(ORDERS_KEY, JSON.stringify(all));
+  }
 }
 
-export function genOrderId() {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-  return `HAB-${stamp}`;
+/** (Opcional) Limpa todos os pedidos — útil em testes */
+export async function clearOrders() {
+  await SecureStore.deleteItemAsync(ORDERS_KEY);
 }
