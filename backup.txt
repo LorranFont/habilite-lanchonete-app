@@ -1,0 +1,2910 @@
+diff --git a/App.tsx b/App.tsx
+index f7199ed..be29367 100644
+--- a/App.tsx
++++ b/App.tsx
+@@ -1,58 +1 @@
+-import { NavigationContainer } from "@react-navigation/native";
+-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+-import { HomeScreen } from "./src/pages/home";
+-import { LoginScreen } from "./src/pages/login";
+-import { RegisterScreen } from "./src/pages/register";
+-import { MenuScreen } from "./src/pages/menu";
+-import { CartScreen } from "./src/pages/cart";
+-import { CheckoutScreen } from "./src/pages/checkout";
+-import { SuccessScreen } from "./src/pages/success";
+-import { OrdersScreen } from "./src/pages/orders";
+-import { CartProvider } from "./src/context/cart";
+-
+-export type RootStackParamList = {
+-  Home: undefined;
+-  Login: undefined;
+-  Register: undefined;
+-  Menu: undefined;
+-  Cart: undefined;
+-  Checkout: undefined;
+-  Success: { orderId?: string } | undefined;
+-  Orders: undefined;
+-};
+-
+-const Stack = createNativeStackNavigator<RootStackParamList>();
+-
+-export default function App() {
+-  return (
+-    <CartProvider>
+-      <NavigationContainer>
+-        <Stack.Navigator
+-          initialRouteName="Home"
+-          screenOptions={{
+-            headerShown: false,
+-            animation: "slide_from_right", // transição padrão
+-          }}
+-        >
+-          <Stack.Screen name="Home" component={HomeScreen} />
+-          <Stack.Screen name="Login" component={LoginScreen} />
+-          <Stack.Screen name="Register" component={RegisterScreen} />
+-          <Stack.Screen name="Menu" component={MenuScreen} />
+-          <Stack.Screen name="Cart" component={CartScreen} />
+-          {/* Telas modais (subindo de baixo) */}
+-          <Stack.Screen
+-            name="Checkout"
+-            component={CheckoutScreen}
+-            options={{ presentation: "containedModal", animation: "slide_from_bottom" }}
+-          />
+-          <Stack.Screen
+-            name="Success"
+-            component={SuccessScreen}
+-            options={{ presentation: "containedModal", animation: "fade" }}
+-          />
+-          <Stack.Screen name="Orders" component={OrdersScreen} />
+-        </Stack.Navigator>
+-      </NavigationContainer>
+-    </CartProvider>
+-  );
+-}
++export { default } from "expo-router/entry";
+\ No newline at end of file
+diff --git a/app.json b/app.json
+index a8cbef0..507ba9c 100644
+--- a/app.json
++++ b/app.json
+@@ -29,11 +29,8 @@
+       "bundler": "metro"
+     },
+     "plugins": [
+-      "expo-secure-store"
+-    ],
+-    "extra": {
+-      "apiBaseUrl": "http://192.168.1.104:3000"
+-    }
++      "expo-secure-store",
++      "expo-router"
++    ]
+   }
+ }
+-
+diff --git a/babel.config.js b/babel.config.js
+index 08c6bc8..140e357 100644
+--- a/babel.config.js
++++ b/babel.config.js
+@@ -1,4 +1,4 @@
+-module.exports = function (api) {
++module.exports = function(api) {
+   api.cache(true);
+   return {
+     presets: ['babel-preset-expo'],
+diff --git a/index.ts b/index.ts
+index 8f76389..80d3d99 100644
+--- a/index.ts
++++ b/index.ts
+@@ -1,3 +1 @@
+-import { registerRootComponent } from 'expo';
+-import App from './App';
+-registerRootComponent(App);
++import "expo-router/entry";
+diff --git a/package-lock.json b/package-lock.json
+index 7203810..373de2f 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -16,6 +16,7 @@
+         "expo-constants": "~18.0.9",
+         "expo-haptics": "~15.0.7",
+         "expo-linear-gradient": "~15.0.7",
++        "expo-router": "~6.0.13",
+         "expo-secure-store": "~15.0.7",
+         "expo-status-bar": "~3.0.8",
+         "nativewind": "^2.0.11",
+@@ -2121,6 +2122,29 @@
+         "metro-transform-worker": "0.83.1"
+       }
+     },
++    "node_modules/@expo/metro-runtime": {
++      "version": "6.1.2",
++      "resolved": "https://registry.npmjs.org/@expo/metro-runtime/-/metro-runtime-6.1.2.tgz",
++      "integrity": "sha512-nvM+Qv45QH7pmYvP8JB1G8JpScrWND3KrMA6ZKe62cwwNiX/BjHU28Ear0v/4bQWXlOY0mv6B8CDIm8JxXde9g==",
++      "license": "MIT",
++      "dependencies": {
++        "anser": "^1.4.9",
++        "pretty-format": "^29.7.0",
++        "stacktrace-parser": "^0.1.10",
++        "whatwg-fetch": "^3.0.0"
++      },
++      "peerDependencies": {
++        "expo": "*",
++        "react": "*",
++        "react-dom": "*",
++        "react-native": "*"
++      },
++      "peerDependenciesMeta": {
++        "react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@expo/osascript": {
+       "version": "2.3.7",
+       "resolved": "https://registry.npmjs.org/@expo/osascript/-/osascript-2.3.7.tgz",
+@@ -2849,6 +2873,193 @@
+         "node": ">=14"
+       }
+     },
++    "node_modules/@radix-ui/primitive": {
++      "version": "1.1.3",
++      "resolved": "https://registry.npmjs.org/@radix-ui/primitive/-/primitive-1.1.3.tgz",
++      "integrity": "sha512-JTF99U/6XIjCBo0wqkU5sK10glYe27MRRsfwoiq5zzOEZLHU3A3KCMa5X/azekYRCJ0HlwI0crAXS/5dEHTzDg==",
++      "license": "MIT"
++    },
++    "node_modules/@radix-ui/react-compose-refs": {
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.2.tgz",
++      "integrity": "sha512-z4eqJvfiNnFMHIIvXP3CY57y2WJs5g2v3X0zm9mEJkrkNv4rDxu+sg9Jh8EkXyeqBkB7SOcboo9dMVqhyrACIg==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-context": {
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-context/-/react-context-1.1.2.tgz",
++      "integrity": "sha512-jCi/QKUM2r1Ju5a3J64TH2A5SpKAgh0LpknyqdQ4m6DCV0xJ2HG1xARRwNGPQfi1SLdLWZ1OJz6F4OMBBNiGJA==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-direction": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-direction/-/react-direction-1.1.1.tgz",
++      "integrity": "sha512-1UEWRX6jnOA2y4H5WczZ44gOOjTEmlqv1uNW4GAJEO5+bauCBhv8snY65Iw5/VOS/ghKN9gr2KjnLKxrsvoMVw==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-focus-guards": {
++      "version": "1.1.3",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-guards/-/react-focus-guards-1.1.3.tgz",
++      "integrity": "sha512-0rFg/Rj2Q62NCm62jZw0QX7a3sz6QCQU0LpZdNrJX8byRGaGVTqbrW9jAoIAHyMQqsNpeZ81YgSizOt5WXq0Pw==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-id": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-id/-/react-id-1.1.1.tgz",
++      "integrity": "sha512-kGkGegYIdQsOb4XjsfM97rXsiHaBwco+hFI66oO4s9LU+PLAC5oJ7khdOVFxkhsmlbpUqDAvXw11CluXP+jkHg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-slot": {
++      "version": "1.2.0",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.2.0.tgz",
++      "integrity": "sha512-ujc+V6r0HNDviYqIK3rW4ffgYiZ8g5DEHrGJVk4x7kTlLXRDILnKX9vAUYeIsLOoDpDJ0ujpqMkjH4w2ofuo6w==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-callback-ref": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.1.tgz",
++      "integrity": "sha512-FkBMwD+qbGQeMu1cOHnuGB6x4yzPjho8ap5WtbEJ26umhgqVXbhekKUQO+hZEL1vU92a3wHwdp0HAcqAUF5iDg==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-controllable-state": {
++      "version": "1.2.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.2.2.tgz",
++      "integrity": "sha512-BjasUjixPFdS+NKkypcyyN5Pmg83Olst0+c6vGov0diwTEo6mgdqVR6hxcEgFuh4QrAs7Rc+9KuGJ9TVCj0Zzg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-effect-event": "0.0.2",
++        "@radix-ui/react-use-layout-effect": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-effect-event": {
++      "version": "0.0.2",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-effect-event/-/react-use-effect-event-0.0.2.tgz",
++      "integrity": "sha512-Qp8WbZOBe+blgpuUT+lw2xheLP8q0oatc9UpmiemEICxGvFLYmHm9QowVZGHtJlGbS6A6yJ3iViad/2cVjnOiA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-layout-effect": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-escape-keydown": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-escape-keydown/-/react-use-escape-keydown-1.1.1.tgz",
++      "integrity": "sha512-Il0+boE7w/XebUHyBjroE+DbByORGR9KKmITzbR7MyQ4akpORYP/ZmbhAr0DG7RmmBqoOnZdy2QlvajJ2QA59g==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-use-callback-ref": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@radix-ui/react-use-layout-effect": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-use-layout-effect/-/react-use-layout-effect-1.1.1.tgz",
++      "integrity": "sha512-RbJRS4UWQFkzHTTwVymMTUv8EqYhOp8dOOviLj2ugtTiXRaRQS7GLGxZTLL1jWhMeoSCf5zmcZkqTl9IiYfXcQ==",
++      "license": "MIT",
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@react-native/assets-registry": {
+       "version": "0.81.4",
+       "resolved": "https://registry.npmjs.org/@react-native/assets-registry/-/assets-registry-0.81.4.tgz",
+@@ -3111,6 +3322,23 @@
+         }
+       }
+     },
++    "node_modules/@react-navigation/bottom-tabs": {
++      "version": "7.4.9",
++      "resolved": "https://registry.npmjs.org/@react-navigation/bottom-tabs/-/bottom-tabs-7.4.9.tgz",
++      "integrity": "sha512-Q7oUEB3YjwGyY/OLzkq+tv0STe2d9m8NAJOtKsd6GtN/LtrHmG7LdpOm5qitL60+gdY1zY7SWUD4am5c33RssA==",
++      "license": "MIT",
++      "dependencies": {
++        "@react-navigation/elements": "^2.6.5",
++        "color": "^4.2.3"
++      },
++      "peerDependencies": {
++        "@react-navigation/native": "^7.1.18",
++        "react": ">= 18.2.0",
++        "react-native": "*",
++        "react-native-safe-area-context": ">= 4.0.0",
++        "react-native-screens": ">= 4.0.0"
++      }
++    },
+     "node_modules/@react-navigation/core": {
+       "version": "7.12.4",
+       "resolved": "https://registry.npmjs.org/@react-navigation/core/-/core-7.12.4.tgz",
+@@ -3148,9 +3376,9 @@
+       "license": "MIT"
+     },
+     "node_modules/@react-navigation/elements": {
+-      "version": "2.6.4",
+-      "resolved": "https://registry.npmjs.org/@react-navigation/elements/-/elements-2.6.4.tgz",
+-      "integrity": "sha512-O3X9vWXOEhAO56zkQS7KaDzL8BvjlwZ0LGSteKpt1/k6w6HONG+2Wkblrb057iKmehTkEkQMzMLkXiuLmN5x9Q==",
++      "version": "2.6.5",
++      "resolved": "https://registry.npmjs.org/@react-navigation/elements/-/elements-2.6.5.tgz",
++      "integrity": "sha512-HOaekvFeoqKyaSKP2hakL7OUnw0jIhk/1wMjcovUKblT76LMTumZpriqsc30m/Vnyy1a8zgp4VsuA1xftcalgQ==",
+       "license": "MIT",
+       "dependencies": {
+         "color": "^4.2.3",
+@@ -3159,7 +3387,7 @@
+       },
+       "peerDependencies": {
+         "@react-native-masked-view/masked-view": ">= 0.2.0",
+-        "@react-navigation/native": "^7.1.17",
++        "@react-navigation/native": "^7.1.18",
+         "react": ">= 18.2.0",
+         "react-native": "*",
+         "react-native-safe-area-context": ">= 4.0.0"
+@@ -3171,10 +3399,11 @@
+       }
+     },
+     "node_modules/@react-navigation/native": {
+-      "version": "7.1.17",
+-      "resolved": "https://registry.npmjs.org/@react-navigation/native/-/native-7.1.17.tgz",
+-      "integrity": "sha512-uEcYWi1NV+2Qe1oELfp9b5hTYekqWATv2cuwcOAg5EvsIsUPtzFrKIasgUXLBRGb9P7yR5ifoJ+ug4u6jdqSTQ==",
++      "version": "7.1.18",
++      "resolved": "https://registry.npmjs.org/@react-navigation/native/-/native-7.1.18.tgz",
++      "integrity": "sha512-DZgd6860dxcq3YX7UzIXeBr6m3UgXvo9acxp5jiJyIZXdR00Br9JwVkO7e0bUeTA2d3Z8dsmtAR84Y86NnH64Q==",
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@react-navigation/core": "^7.12.4",
+         "escape-string-regexp": "^4.0.0",
+@@ -3536,6 +3765,18 @@
+         "sprintf-js": "~1.0.2"
+       }
+     },
++    "node_modules/aria-hidden": {
++      "version": "1.2.6",
++      "resolved": "https://registry.npmjs.org/aria-hidden/-/aria-hidden-1.2.6.tgz",
++      "integrity": "sha512-ik3ZgC9dY/lYVVM++OISsaYDeg1tb0VtP5uL3ouh1koGOaUMDPpbFIei4JkFimWUFPn90sbMNMXQAIVOlnYKJA==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      }
++    },
+     "node_modules/asap": {
+       "version": "2.0.6",
+       "resolved": "https://registry.npmjs.org/asap/-/asap-2.0.6.tgz",
+@@ -4273,6 +4514,12 @@
+         "url": "https://github.com/sponsors/sindresorhus"
+       }
+     },
++    "node_modules/client-only": {
++      "version": "0.0.1",
++      "resolved": "https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz",
++      "integrity": "sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==",
++      "license": "MIT"
++    },
+     "node_modules/cliui": {
+       "version": "8.0.1",
+       "resolved": "https://registry.npmjs.org/cliui/-/cliui-8.0.1.tgz",
+@@ -4746,6 +4993,12 @@
+         "node": ">=8"
+       }
+     },
++    "node_modules/detect-node-es": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/detect-node-es/-/detect-node-es-1.1.0.tgz",
++      "integrity": "sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==",
++      "license": "MIT"
++    },
+     "node_modules/didyoumean": {
+       "version": "1.2.2",
+       "resolved": "https://registry.npmjs.org/didyoumean/-/didyoumean-1.2.2.tgz",
+@@ -4964,6 +5217,7 @@
+       "resolved": "https://registry.npmjs.org/expo-constants/-/expo-constants-18.0.9.tgz",
+       "integrity": "sha512-sqoXHAOGDcr+M9NlXzj1tGoZyd3zxYDy215W6E0Z0n8fgBaqce9FAYQE2bu5X4G629AYig5go7U6sQz7Pjcm8A==",
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@expo/config": "~12.0.9",
+         "@expo/env": "~2.0.7"
+@@ -5008,6 +5262,21 @@
+         "react-native": "*"
+       }
+     },
++    "node_modules/expo-linking": {
++      "version": "8.0.8",
++      "resolved": "https://registry.npmjs.org/expo-linking/-/expo-linking-8.0.8.tgz",
++      "integrity": "sha512-MyeMcbFDKhXh4sDD1EHwd0uxFQNAc6VCrwBkNvvvufUsTYFq3glTA9Y8a+x78CPpjNqwNAamu74yIaIz7IEJyg==",
++      "license": "MIT",
++      "peer": true,
++      "dependencies": {
++        "expo-constants": "~18.0.8",
++        "invariant": "^2.2.4"
++      },
++      "peerDependencies": {
++        "react": "*",
++        "react-native": "*"
++      }
++    },
+     "node_modules/expo-modules-autolinking": {
+       "version": "3.0.14",
+       "resolved": "https://registry.npmjs.org/expo-modules-autolinking/-/expo-modules-autolinking-3.0.14.tgz",
+@@ -5062,50 +5331,315 @@
+       "integrity": "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==",
+       "license": "MIT",
+       "dependencies": {
+-        "color-name": "~1.1.4"
++        "color-name": "~1.1.4"
++      },
++      "engines": {
++        "node": ">=7.0.0"
++      }
++    },
++    "node_modules/expo-modules-autolinking/node_modules/color-name": {
++      "version": "1.1.4",
++      "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
++      "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
++      "license": "MIT"
++    },
++    "node_modules/expo-modules-autolinking/node_modules/has-flag": {
++      "version": "4.0.0",
++      "resolved": "https://registry.npmjs.org/has-flag/-/has-flag-4.0.0.tgz",
++      "integrity": "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=8"
++      }
++    },
++    "node_modules/expo-modules-autolinking/node_modules/supports-color": {
++      "version": "7.2.0",
++      "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-7.2.0.tgz",
++      "integrity": "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==",
++      "license": "MIT",
++      "dependencies": {
++        "has-flag": "^4.0.0"
++      },
++      "engines": {
++        "node": ">=8"
++      }
++    },
++    "node_modules/expo-modules-core": {
++      "version": "3.0.19",
++      "resolved": "https://registry.npmjs.org/expo-modules-core/-/expo-modules-core-3.0.19.tgz",
++      "integrity": "sha512-CJhmB2BznyAFhLAX4dv360v+S+gPy4GN4LvqpeuG550qTL5RGTBOFTzz7CjgshNDp9bLWR25zBjxZhJCFYDBSg==",
++      "license": "MIT",
++      "dependencies": {
++        "invariant": "^2.2.4"
++      },
++      "peerDependencies": {
++        "react": "*",
++        "react-native": "*"
++      }
++    },
++    "node_modules/expo-router": {
++      "version": "6.0.13",
++      "resolved": "https://registry.npmjs.org/expo-router/-/expo-router-6.0.13.tgz",
++      "integrity": "sha512-ngvdEah2+/Xf3/2SSrEuaW9qawUYlkh3NEpw0ZSsjUjgliKTI2rtw1H+dNnIsZEcvnGe/b8UvQHai60KnhAnJw==",
++      "license": "MIT",
++      "dependencies": {
++        "@expo/metro-runtime": "^6.1.2",
++        "@expo/schema-utils": "^0.1.7",
++        "@radix-ui/react-slot": "1.2.0",
++        "@radix-ui/react-tabs": "^1.1.12",
++        "@react-navigation/bottom-tabs": "^7.4.0",
++        "@react-navigation/native": "^7.1.8",
++        "@react-navigation/native-stack": "^7.3.16",
++        "client-only": "^0.0.1",
++        "debug": "^4.3.4",
++        "escape-string-regexp": "^4.0.0",
++        "expo-server": "^1.0.2",
++        "fast-deep-equal": "^3.1.3",
++        "invariant": "^2.2.4",
++        "nanoid": "^3.3.8",
++        "query-string": "^7.1.3",
++        "react-fast-compare": "^3.2.2",
++        "react-native-is-edge-to-edge": "^1.1.6",
++        "semver": "~7.6.3",
++        "server-only": "^0.0.1",
++        "sf-symbols-typescript": "^2.1.0",
++        "shallowequal": "^1.1.0",
++        "use-latest-callback": "^0.2.1",
++        "vaul": "^1.1.2"
++      },
++      "peerDependencies": {
++        "@expo/metro-runtime": "^6.1.2",
++        "@react-navigation/drawer": "^7.5.0",
++        "@testing-library/react-native": ">= 12.0.0",
++        "expo": "*",
++        "expo-constants": "^18.0.9",
++        "expo-linking": "^8.0.8",
++        "react": "*",
++        "react-dom": "*",
++        "react-native": "*",
++        "react-native-gesture-handler": "*",
++        "react-native-reanimated": "*",
++        "react-native-safe-area-context": ">= 5.4.0",
++        "react-native-screens": "*",
++        "react-native-web": "*",
++        "react-server-dom-webpack": ">= 19.0.0"
++      },
++      "peerDependenciesMeta": {
++        "@react-navigation/drawer": {
++          "optional": true
++        },
++        "@testing-library/react-native": {
++          "optional": true
++        },
++        "react-dom": {
++          "optional": true
++        },
++        "react-native-gesture-handler": {
++          "optional": true
++        },
++        "react-native-reanimated": {
++          "optional": true
++        },
++        "react-native-web": {
++          "optional": true
++        },
++        "react-server-dom-webpack": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/expo-router/node_modules/@radix-ui/react-collection": {
++      "version": "1.1.7",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-collection/-/react-collection-1.1.7.tgz",
++      "integrity": "sha512-Fh9rGN0MoI4ZFUNyfFVNU4y9LUz93u9/0K+yLgA2bwRojxM8JU1DyvvMBabnZPBgMWREAJvU2jjVzq+LrFUglw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.2",
++        "@radix-ui/react-context": "1.1.2",
++        "@radix-ui/react-primitive": "2.1.3",
++        "@radix-ui/react-slot": "1.2.3"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/expo-router/node_modules/@radix-ui/react-collection/node_modules/@radix-ui/react-slot": {
++      "version": "1.2.3",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.2.3.tgz",
++      "integrity": "sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/expo-router/node_modules/@radix-ui/react-presence": {
++      "version": "1.1.5",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.1.5.tgz",
++      "integrity": "sha512-/jfEwNDdQVBCNvjkGit4h6pMOzq8bHkopq458dPt2lMjx+eBQUohZNG9A7DtO/O5ukSbxuaNGXMjHicgwy6rQQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.2",
++        "@radix-ui/react-use-layout-effect": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/expo-router/node_modules/@radix-ui/react-primitive": {
++      "version": "2.1.3",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.1.3.tgz",
++      "integrity": "sha512-m9gTwRkhy2lvCPe6QJp4d3G1TYEUHn/FzJUtq9MjH46an1wJU+GdoGC5VLof8RX8Ft/DlpshApkhswDLZzHIcQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-slot": "1.2.3"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/expo-router/node_modules/@radix-ui/react-primitive/node_modules/@radix-ui/react-slot": {
++      "version": "1.2.3",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.2.3.tgz",
++      "integrity": "sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/expo-router/node_modules/@radix-ui/react-roving-focus": {
++      "version": "1.1.11",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-roving-focus/-/react-roving-focus-1.1.11.tgz",
++      "integrity": "sha512-7A6S9jSgm/S+7MdtNDSb+IU859vQqJ/QAtcYQcfFC6W8RS4IxIZDldLR0xqCFZ6DCyrQLjLPsxtTNch5jVA4lA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.3",
++        "@radix-ui/react-collection": "1.1.7",
++        "@radix-ui/react-compose-refs": "1.1.2",
++        "@radix-ui/react-context": "1.1.2",
++        "@radix-ui/react-direction": "1.1.1",
++        "@radix-ui/react-id": "1.1.1",
++        "@radix-ui/react-primitive": "2.1.3",
++        "@radix-ui/react-use-callback-ref": "1.1.1",
++        "@radix-ui/react-use-controllable-state": "1.2.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/expo-router/node_modules/@radix-ui/react-tabs": {
++      "version": "1.1.13",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-tabs/-/react-tabs-1.1.13.tgz",
++      "integrity": "sha512-7xdcatg7/U+7+Udyoj2zodtI9H/IIopqo+YOIcZOq1nJwXWBZ9p8xiu5llXlekDbZkca79a/fozEYQXIA4sW6A==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.3",
++        "@radix-ui/react-context": "1.1.2",
++        "@radix-ui/react-direction": "1.1.1",
++        "@radix-ui/react-id": "1.1.1",
++        "@radix-ui/react-presence": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.3",
++        "@radix-ui/react-roving-focus": "1.1.11",
++        "@radix-ui/react-use-controllable-state": "1.2.2"
+       },
+-      "engines": {
+-        "node": ">=7.0.0"
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
+       }
+     },
+-    "node_modules/expo-modules-autolinking/node_modules/color-name": {
+-      "version": "1.1.4",
+-      "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
+-      "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
+-      "license": "MIT"
+-    },
+-    "node_modules/expo-modules-autolinking/node_modules/has-flag": {
++    "node_modules/expo-router/node_modules/escape-string-regexp": {
+       "version": "4.0.0",
+-      "resolved": "https://registry.npmjs.org/has-flag/-/has-flag-4.0.0.tgz",
+-      "integrity": "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==",
++      "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz",
++      "integrity": "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==",
+       "license": "MIT",
+       "engines": {
+-        "node": ">=8"
+-      }
+-    },
+-    "node_modules/expo-modules-autolinking/node_modules/supports-color": {
+-      "version": "7.2.0",
+-      "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-7.2.0.tgz",
+-      "integrity": "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "has-flag": "^4.0.0"
++        "node": ">=10"
+       },
+-      "engines": {
+-        "node": ">=8"
++      "funding": {
++        "url": "https://github.com/sponsors/sindresorhus"
+       }
+     },
+-    "node_modules/expo-modules-core": {
+-      "version": "3.0.19",
+-      "resolved": "https://registry.npmjs.org/expo-modules-core/-/expo-modules-core-3.0.19.tgz",
+-      "integrity": "sha512-CJhmB2BznyAFhLAX4dv360v+S+gPy4GN4LvqpeuG550qTL5RGTBOFTzz7CjgshNDp9bLWR25zBjxZhJCFYDBSg==",
+-      "license": "MIT",
+-      "dependencies": {
+-        "invariant": "^2.2.4"
++    "node_modules/expo-router/node_modules/semver": {
++      "version": "7.6.3",
++      "resolved": "https://registry.npmjs.org/semver/-/semver-7.6.3.tgz",
++      "integrity": "sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==",
++      "license": "ISC",
++      "bin": {
++        "semver": "bin/semver.js"
+       },
+-      "peerDependencies": {
+-        "react": "*",
+-        "react-native": "*"
++      "engines": {
++        "node": ">=10"
+       }
+     },
+     "node_modules/expo-secure-store": {
+@@ -5117,6 +5651,15 @@
+         "expo": "*"
+       }
+     },
++    "node_modules/expo-server": {
++      "version": "1.0.2",
++      "resolved": "https://registry.npmjs.org/expo-server/-/expo-server-1.0.2.tgz",
++      "integrity": "sha512-QlQLjFuwgCiBc+Qq0IyBBHiZK1RS0NJSsKVB5iECMJrR04q7PhkaF7dON0fhvo00COy4fT9rJ5brrJDpFro/gA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=20.16.0"
++      }
++    },
+     "node_modules/expo-status-bar": {
+       "version": "3.0.8",
+       "resolved": "https://registry.npmjs.org/expo-status-bar/-/expo-status-bar-3.0.8.tgz",
+@@ -5780,6 +6323,15 @@
+         "node": "6.* || 8.* || >= 10.*"
+       }
+     },
++    "node_modules/get-nonce": {
++      "version": "1.0.1",
++      "resolved": "https://registry.npmjs.org/get-nonce/-/get-nonce-1.0.1.tgz",
++      "integrity": "sha512-FJhYRoDaiatfEkUK8HKlicmu/3SGFD51q3itKDGoSTysQJBnfOcxU5GxnhE1E6soB76MbT0MBtnKJuXyAx+96Q==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=6"
++      }
++    },
+     "node_modules/get-package-type": {
+       "version": "0.1.0",
+       "resolved": "https://registry.npmjs.org/get-package-type/-/get-package-type-0.1.0.tgz",
+@@ -8481,6 +9033,12 @@
+         "react": "^19.1.0"
+       }
+     },
++    "node_modules/react-fast-compare": {
++      "version": "3.2.2",
++      "resolved": "https://registry.npmjs.org/react-fast-compare/-/react-fast-compare-3.2.2.tgz",
++      "integrity": "sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==",
++      "license": "MIT"
++    },
+     "node_modules/react-freeze": {
+       "version": "1.0.4",
+       "resolved": "https://registry.npmjs.org/react-freeze/-/react-freeze-1.0.4.tgz",
+@@ -8609,6 +9167,7 @@
+       "resolved": "https://registry.npmjs.org/react-native-web/-/react-native-web-0.21.2.tgz",
+       "integrity": "sha512-SO2t9/17zM4iEnFvlu2DA9jqNbzNhoUP+AItkoCOyFmDMOhUnBBznBDCYN92fGdfAkfQlWzPoez6+zLxFNsZEg==",
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@babel/runtime": "^7.18.6",
+         "@react-native/normalize-colors": "^0.74.1",
+@@ -8707,6 +9266,75 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/react-remove-scroll": {
++      "version": "2.7.1",
++      "resolved": "https://registry.npmjs.org/react-remove-scroll/-/react-remove-scroll-2.7.1.tgz",
++      "integrity": "sha512-HpMh8+oahmIdOuS5aFKKY6Pyog+FNaZV/XyJOq7b4YFwsFHe5yYfdbIalI4k3vU2nSDql7YskmUseHsRrJqIPA==",
++      "license": "MIT",
++      "dependencies": {
++        "react-remove-scroll-bar": "^2.3.7",
++        "react-style-singleton": "^2.2.3",
++        "tslib": "^2.1.0",
++        "use-callback-ref": "^1.3.3",
++        "use-sidecar": "^1.1.3"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/react-remove-scroll-bar": {
++      "version": "2.3.8",
++      "resolved": "https://registry.npmjs.org/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.8.tgz",
++      "integrity": "sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==",
++      "license": "MIT",
++      "dependencies": {
++        "react-style-singleton": "^2.2.2",
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/react-style-singleton": {
++      "version": "2.2.3",
++      "resolved": "https://registry.npmjs.org/react-style-singleton/-/react-style-singleton-2.2.3.tgz",
++      "integrity": "sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==",
++      "license": "MIT",
++      "dependencies": {
++        "get-nonce": "^1.0.0",
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/read-cache": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/read-cache/-/read-cache-1.0.0.tgz",
+@@ -9131,6 +9759,12 @@
+         "node": ">= 0.8"
+       }
+     },
++    "node_modules/server-only": {
++      "version": "0.0.1",
++      "resolved": "https://registry.npmjs.org/server-only/-/server-only-0.0.1.tgz",
++      "integrity": "sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==",
++      "license": "MIT"
++    },
+     "node_modules/setimmediate": {
+       "version": "1.0.5",
+       "resolved": "https://registry.npmjs.org/setimmediate/-/setimmediate-1.0.5.tgz",
+@@ -9143,6 +9777,21 @@
+       "integrity": "sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==",
+       "license": "ISC"
+     },
++    "node_modules/sf-symbols-typescript": {
++      "version": "2.1.0",
++      "resolved": "https://registry.npmjs.org/sf-symbols-typescript/-/sf-symbols-typescript-2.1.0.tgz",
++      "integrity": "sha512-ezT7gu/SHTPIOEEoG6TF+O0m5eewl0ZDAO4AtdBi5HjsrUI6JdCG17+Q8+aKp0heM06wZKApRCn5olNbs0Wb/A==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=10"
++      }
++    },
++    "node_modules/shallowequal": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/shallowequal/-/shallowequal-1.1.0.tgz",
++      "integrity": "sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==",
++      "license": "MIT"
++    },
+     "node_modules/shebang-command": {
+       "version": "2.0.0",
+       "resolved": "https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz",
+@@ -9826,6 +10475,12 @@
+       "integrity": "sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==",
+       "license": "Apache-2.0"
+     },
++    "node_modules/tslib": {
++      "version": "2.8.1",
++      "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
++      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==",
++      "license": "0BSD"
++    },
+     "node_modules/type-detect": {
+       "version": "4.0.8",
+       "resolved": "https://registry.npmjs.org/type-detect/-/type-detect-4.0.8.tgz",
+@@ -9990,6 +10645,27 @@
+         "browserslist": ">= 4.21.0"
+       }
+     },
++    "node_modules/use-callback-ref": {
++      "version": "1.3.3",
++      "resolved": "https://registry.npmjs.org/use-callback-ref/-/use-callback-ref-1.3.3.tgz",
++      "integrity": "sha512-jQL3lRnocaFtu3V00JToYz/4QkNWswxijDaCVNZRiRTO3HQDLsdu1ZtmIUvV4yPp+rvWm5j0y0TG/S61cuijTg==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/use-latest-callback": {
+       "version": "0.2.4",
+       "resolved": "https://registry.npmjs.org/use-latest-callback/-/use-latest-callback-0.2.4.tgz",
+@@ -9999,6 +10675,28 @@
+         "react": ">=16.8"
+       }
+     },
++    "node_modules/use-sidecar": {
++      "version": "1.1.3",
++      "resolved": "https://registry.npmjs.org/use-sidecar/-/use-sidecar-1.1.3.tgz",
++      "integrity": "sha512-Fedw0aZvkhynoPYlA5WXrMCAMm+nSWdZt6lzJQ7Ok8S6Q+VsHmHpRWndVRJ8Be0ZbkfPc5LRYH+5XrzXcEeLRQ==",
++      "license": "MIT",
++      "dependencies": {
++        "detect-node-es": "^1.1.0",
++        "tslib": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=10"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/use-sync-external-store": {
+       "version": "1.5.0",
+       "resolved": "https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.5.0.tgz",
+@@ -10050,6 +10748,196 @@
+         "node": ">= 0.8"
+       }
+     },
++    "node_modules/vaul": {
++      "version": "1.1.2",
++      "resolved": "https://registry.npmjs.org/vaul/-/vaul-1.1.2.tgz",
++      "integrity": "sha512-ZFkClGpWyI2WUQjdLJ/BaGuV6AVQiJ3uELGk3OYtP+B6yCO7Cmn9vPFXVJkRaGkOJu3m8bQMgtyzNHixULceQA==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-dialog": "^1.1.1"
++      },
++      "peerDependencies": {
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
++      }
++    },
++    "node_modules/vaul/node_modules/@radix-ui/react-dialog": {
++      "version": "1.1.15",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dialog/-/react-dialog-1.1.15.tgz",
++      "integrity": "sha512-TCglVRtzlffRNxRMEyR36DGBLJpeusFcgMVD9PZEzAKnUs1lKCgX5u9BmC2Yg+LL9MgZDugFFs1Vl+Jp4t/PGw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.3",
++        "@radix-ui/react-compose-refs": "1.1.2",
++        "@radix-ui/react-context": "1.1.2",
++        "@radix-ui/react-dismissable-layer": "1.1.11",
++        "@radix-ui/react-focus-guards": "1.1.3",
++        "@radix-ui/react-focus-scope": "1.1.7",
++        "@radix-ui/react-id": "1.1.1",
++        "@radix-ui/react-portal": "1.1.9",
++        "@radix-ui/react-presence": "1.1.5",
++        "@radix-ui/react-primitive": "2.1.3",
++        "@radix-ui/react-slot": "1.2.3",
++        "@radix-ui/react-use-controllable-state": "1.2.2",
++        "aria-hidden": "^1.2.4",
++        "react-remove-scroll": "^2.6.3"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/vaul/node_modules/@radix-ui/react-dismissable-layer": {
++      "version": "1.1.11",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-dismissable-layer/-/react-dismissable-layer-1.1.11.tgz",
++      "integrity": "sha512-Nqcp+t5cTB8BinFkZgXiMJniQH0PsUt2k51FUhbdfeKvc4ACcG2uQniY/8+h1Yv6Kza4Q7lD7PQV0z0oicE0Mg==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/primitive": "1.1.3",
++        "@radix-ui/react-compose-refs": "1.1.2",
++        "@radix-ui/react-primitive": "2.1.3",
++        "@radix-ui/react-use-callback-ref": "1.1.1",
++        "@radix-ui/react-use-escape-keydown": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/vaul/node_modules/@radix-ui/react-focus-scope": {
++      "version": "1.1.7",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.1.7.tgz",
++      "integrity": "sha512-t2ODlkXBQyn7jkl6TNaw/MtVEVvIGelJDCG41Okq/KwUsJBwQ4XVZsHAVUkK4mBv3ewiAS3PGuUWuY2BoK4ZUw==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.2",
++        "@radix-ui/react-primitive": "2.1.3",
++        "@radix-ui/react-use-callback-ref": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/vaul/node_modules/@radix-ui/react-portal": {
++      "version": "1.1.9",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.9.tgz",
++      "integrity": "sha512-bpIxvq03if6UNwXZ+HTK71JLh4APvnXntDc6XOX8UVq4XQOVl7lwok0AvIl+b8zgCw3fSaVTZMpAPPagXbKmHQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-primitive": "2.1.3",
++        "@radix-ui/react-use-layout-effect": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/vaul/node_modules/@radix-ui/react-presence": {
++      "version": "1.1.5",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.1.5.tgz",
++      "integrity": "sha512-/jfEwNDdQVBCNvjkGit4h6pMOzq8bHkopq458dPt2lMjx+eBQUohZNG9A7DtO/O5ukSbxuaNGXMjHicgwy6rQQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.2",
++        "@radix-ui/react-use-layout-effect": "1.1.1"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/vaul/node_modules/@radix-ui/react-primitive": {
++      "version": "2.1.3",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.1.3.tgz",
++      "integrity": "sha512-m9gTwRkhy2lvCPe6QJp4d3G1TYEUHn/FzJUtq9MjH46an1wJU+GdoGC5VLof8RX8Ft/DlpshApkhswDLZzHIcQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-slot": "1.2.3"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "@types/react-dom": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc",
++        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/vaul/node_modules/@radix-ui/react-slot": {
++      "version": "1.2.3",
++      "resolved": "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.2.3.tgz",
++      "integrity": "sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A==",
++      "license": "MIT",
++      "dependencies": {
++        "@radix-ui/react-compose-refs": "1.1.2"
++      },
++      "peerDependencies": {
++        "@types/react": "*",
++        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/vlq": {
+       "version": "1.0.1",
+       "resolved": "https://registry.npmjs.org/vlq/-/vlq-1.0.1.tgz",
+diff --git a/package.json b/package.json
+index 87287a4..9c7fe54 100644
+--- a/package.json
++++ b/package.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "appaluno",
+   "version": "1.0.0",
+-  "main": "index.ts",
++  "main": "expo-router/entry",
+   "scripts": {
+     "start": "expo start",
+     "android": "expo run:android",
+@@ -17,6 +17,7 @@
+     "expo-constants": "~18.0.9",
+     "expo-haptics": "~15.0.7",
+     "expo-linear-gradient": "~15.0.7",
++    "expo-router": "~6.0.13",
+     "expo-secure-store": "~15.0.7",
+     "expo-status-bar": "~3.0.8",
+     "nativewind": "^2.0.11",
+diff --git a/src/pages/cart.tsx b/src/pages/cart.tsx
+deleted file mode 100644
+index 81cde4a..0000000
+--- a/src/pages/cart.tsx
++++ /dev/null
+@@ -1,117 +0,0 @@
+-import React from "react";
+-import { View, Text, Pressable, Animated } from "react-native";
+-import { Ionicons } from "@expo/vector-icons";
+-import { useCart } from "../context/cart";
+-import { Card, Button } from "../components/ui";
+-
+-const HEADER_H = 110;
+-const HEADER_BG = "rgb(115, 25, 6)"; // #731906
+-
+-export function CartScreen({ navigation }: any) {
+-  const { items, totalQty, totalPrice, inc, dec, remove, clear } = useCart();
+-
+-  return (
+-    <View className="flex-1 bg-gray-50">
+-      {/* Header curvado */}
+-      <View
+-        style={{
+-          height: HEADER_H,
+-          paddingTop: 40,
+-          paddingHorizontal: 16,
+-          paddingBottom: 12,
+-          backgroundColor: HEADER_BG,
+-          borderBottomLeftRadius: 24,
+-          borderBottomRightRadius: 24,
+-          position: "absolute",
+-          top: 0, left: 0, right: 0,
+-          zIndex: 10,
+-        }}
+-      >
+-        <View className="flex-row items-center justify-between">
+-          <Pressable
+-            onPress={() => navigation.goBack()}
+-            className="p-2 rounded-2xl bg-white/20 active:opacity-80"
+-          >
+-            <Ionicons name="chevron-back" size={22} color="#fff" />
+-          </Pressable>
+-
+-          <Text className="text-white font-extrabold text-lg">Meu carrinho</Text>
+-
+-          <Pressable
+-            onPress={() => navigation.navigate("Menu")}
+-            className="p-2 rounded-2xl bg-white active:opacity-90"
+-          >
+-            <Ionicons name="restaurant" size={18} color="#e11d48" />
+-          </Pressable>
+-        </View>
+-      </View>
+-
+-      {/* Conteúdo */}
+-      <View className="flex-1 px-4" style={{ paddingTop: HEADER_H + 8, paddingBottom: 16 }}>
+-        {items.length === 0 ? (
+-          <View className="flex-1 items-center justify-center">
+-            <Text className="text-gray-500 text-lg">🛒 Seu carrinho está vazio.</Text>
+-          </View>
+-        ) : (
+-          <>
+-            {items.map((item) => (
+-              <Card key={String(item.id)} className="mb-3">
+-                <View className="flex-row items-center justify-between">
+-                  <View className="flex-1 pr-3">
+-                    <Text className="text-base font-semibold text-gray-800">{item.name}</Text>
+-                    <Text className="text-gray-500">R$ {item.price.toFixed(2)}</Text>
+-                  </View>
+-
+-                  <View className="flex-row items-center">
+-                    <Pressable
+-                      onPress={() => dec(String(item.id))}
+-                      className="px-3 py-2 rounded-2xl bg-gray-200 active:opacity-80 mr-2"
+-                    >
+-                      <Text className="text-lg">−</Text>
+-                    </Pressable>
+-                    <Text className="w-6 text-center font-semibold">{item.quantity}</Text>
+-                    <Pressable
+-                      onPress={() => inc(String(item.id))}
+-                      className="px-3 py-2 rounded-2xl bg-gray-200 active:opacity-80 ml-2"
+-                    >
+-                      <Text className="text-lg">＋</Text>
+-                    </Pressable>
+-
+-                    <Pressable
+-                      onPress={() => remove(String(item.id))}
+-                      className="ml-3 px-3 py-2 rounded-2xl bg-red-500 active:opacity-80"
+-                    >
+-                      <Text className="text-white font-semibold">Remover</Text>
+-                    </Pressable>
+-                  </View>
+-                </View>
+-              </Card>
+-            ))}
+-
+-            <Card className="mt-1">
+-              <View className="flex-row items-center justify-between">
+-                <Text className="text-base font-semibold">
+-                  Total ({totalQty} {totalQty === 1 ? "item" : "itens"})
+-                </Text>
+-                <Text className="text-lg font-extrabold">R$ {totalPrice.toFixed(2)}</Text>
+-              </View>
+-
+-              <Button
+-                title="Finalizar pedido"
+-                className="mt-3"
+-                onPress={() => navigation.navigate("Checkout")}
+-              />
+-
+-              <Button
+-                title="Limpar carrinho"
+-                variant="outline"
+-                className="mt-2"
+-                onPress={clear}
+-              />
+-            </Card>
+-          </>
+-        )}
+-      </View>
+-    </View>
+-  );
+-}
+diff --git a/src/pages/checkout.tsx b/src/pages/checkout.tsx
+deleted file mode 100644
+index 45a8e9a..0000000
+--- a/src/pages/checkout.tsx
++++ /dev/null
+@@ -1,221 +0,0 @@
+-import { useState } from "react";
+-import {
+-  Alert,
+-  ScrollView,
+-  Text,
+-  TextInput,
+-  View,
+-  Pressable,
+-} from "react-native";
+-import * as Haptics from "expo-haptics";
+-import { useCart } from "../context/cart";
+-import { Card, Button, Field } from "../components/ui";
+-import { brl } from "../utils/money";
+-import { genOrderId, saveOrder } from "../utils/orders";
+-
+-// Paleta Habilite
+-const BRAND = {
+-  primary: "#731906", // vinho/terracota escuro
+-  accent:  "#da0000", // vermelho/coral
+-  peach:   "#FFDFB2", // suave
+-  pink:    "#FF8282",
+-  light:   "#FFCCCC",
+-};
+-
+-type PaymentMethod = "pix" | "dinheiro" | "cartao";
+-
+-export function CheckoutScreen({ navigation }: any) {
+-  const { items, totalQty, totalPrice, clear } = useCart();
+-  const [nome, setNome] = useState("");
+-  const [observacao, setObservacao] = useState("");
+-  const [pagamento, setPagamento] = useState<PaymentMethod | null>(null);
+-  const [enviando, setEnviando] = useState(false);
+-
+-  function validate() {
+-    if (items.length === 0) {
+-      Alert.alert("Carrinho vazio", "Adicione itens antes de finalizar.");
+-      return false;
+-    }
+-    if (!nome.trim()) {
+-      Alert.alert("Informe seu nome");
+-      return false;
+-    }
+-    if (!pagamento) {
+-      Alert.alert("Escolha um método de pagamento");
+-      return false;
+-    }
+-    return true;
+-  }
+-
+-  async function handleConfirm() {
+-    if (!validate()) return;
+-
+-    try {
+-      setEnviando(true);
+-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+-
+-      const orderId = genOrderId();
+-      await saveOrder({
+-        id: orderId,
+-        createdAt: Date.now(),
+-        customer: nome.trim(),
+-        payment: pagamento!,
+-        total: totalPrice,
+-        items: items.map((i) => ({
+-          id: i.id,
+-          name: i.name,
+-          price: i.price,
+-          quantity: i.quantity,
+-        })),
+-        note: observacao || undefined,
+-      });
+-
+-      clear();
+-
+-      navigation.reset({
+-        index: 0,
+-        routes: [{ name: "Success", params: { orderId } }],
+-      });
+-    } finally {
+-      setEnviando(false);
+-    }
+-  }
+-
+-  return (
+-    <View className="flex-1 bg-gray-50">
+-      {/* HEADER */}
+-      <View
+-        style={{
+-          backgroundColor: BRAND.primary,
+-          paddingHorizontal: 16,
+-          paddingTop: 44,
+-          paddingBottom: 14,
+-          borderBottomLeftRadius: 24,
+-          borderBottomRightRadius: 24,
+-          shadowColor: "#000",
+-          shadowOpacity: 0.1,
+-          shadowRadius: 8,
+-          shadowOffset: { width: 0, height: 4 },
+-          elevation: 3,
+-        }}
+-      >
+-        <View className="flex-row items-center justify-between">
+-          <Pressable
+-            onPress={() => navigation.goBack()}
+-            className="px-3 py-2 rounded-2xl bg-white/15 active:opacity-80"
+-          >
+-            <Text className="text-white font-semibold">Voltar</Text>
+-          </Pressable>
+-          <Text className="text-white text-xl font-extrabold">
+-            Finalizar pedido
+-          </Text>
+-          <View style={{ width: 64 }} />
+-        </View>
+-      </View>
+-
+-      <ScrollView className="flex-1 px-4 pt-4">
+-        {/* Resumo do pedido */}
+-        <Card className="mb-4">
+-          <Text className="text-gray-700 font-semibold mb-3">Resumo</Text>
+-          {items.map((it) => (
+-            <View
+-              key={String(it.id)}
+-              className="flex-row items-center justify-between mb-2"
+-            >
+-              <Text className="text-gray-800">
+-                {it.quantity}× {it.name}
+-              </Text>
+-              <Text className="text-gray-600">
+-                {brl(it.price * it.quantity)}
+-              </Text>
+-            </View>
+-          ))}
+-
+-          <View className="flex-row items-center justify-between mt-2 pt-3 border-t border-gray-200">
+-            <Text className="font-semibold">Total ({totalQty} itens)</Text>
+-            <Text className="text-lg font-extrabold">{brl(totalPrice)}</Text>
+-          </View>
+-        </Card>
+-
+-        {/* Dados do cliente */}
+-        <Card className="mb-4">
+-          <Text className="text-gray-700 font-semibold mb-3">
+-            Dados e observações
+-          </Text>
+-
+-          <Field label="Seu nome">
+-            <TextInput
+-              value={nome}
+-              onChangeText={setNome}
+-              placeholder="Ex.: Lorran"
+-              className="border rounded-2xl px-4 py-3 bg-white border-gray-300"
+-            />
+-          </Field>
+-
+-          <Field label="Observações (opcional)">
+-            <TextInput
+-              value={observacao}
+-              onChangeText={setObservacao}
+-              placeholder="Ex.: Sem glúten, pouco gelo…"
+-              className="border rounded-2xl px-4 py-3 bg-white border-gray-300"
+-            />
+-          </Field>
+-        </Card>
+-
+-        {/* Pagamento (chips coloridos) */}
+-        <Card className="mb-2">
+-          <Text className="text-gray-700 font-semibold mb-3">
+-            Forma de pagamento
+-          </Text>
+-
+-          <View className="flex-row flex-wrap gap-2">
+-            {([
+-              { key: "pix",        label: "PIX",       bg: BRAND.accent, text: "#fff",    border: BRAND.accent },
+-              { key: "dinheiro",   label: "DINHEIRO",  bg: BRAND.pink,   text: "#fff",    border: BRAND.pink },
+-              { key: "cartao",     label: "CARTÃO",    bg: BRAND.light,  text: "#731906", border: BRAND.light },
+-            ] as const).map(({ key, label, bg, text, border }) => {
+-              const active = pagamento === (key as PaymentMethod);
+-              return (
+-                <Pressable
+-                  key={key}
+-                  onPress={() => setPagamento(key as PaymentMethod)}
+-                  className="px-4 py-2 rounded-2xl border"
+-                  style={{
+-                    backgroundColor: active ? bg : "#fff",
+-                    borderColor: active ? border : "#D1D5DB",
+-                  }}
+-                >
+-                  <Text
+-                    style={{
+-                      color: active ? text : "#111827",
+-                      fontWeight: active ? "700" : "500",
+-                    }}
+-                  >
+-                    {label}
+-                  </Text>
+-                </Pressable>
+-              );
+-            })}
+-          </View>
+-
+-          <Button
+-            title={enviando ? "Enviando..." : "Confirmar pedido"}
+-            onPress={handleConfirm}
+-            className="mt-4 w-full"
+-            loading={enviando}
+-            disabled={items.length === 0}
+-          />
+-
+-          <Button
+-            title="Voltar ao carrinho"
+-            variant="outline"
+-            className="mt-3 w-full"
+-            onPress={() => navigation.goBack()}
+-          />
+-        </Card>
+-
+-        <View className="h-10" />
+-      </ScrollView>
+-    </View>
+-  );
+-}
+diff --git a/src/pages/home.tsx b/src/pages/home.tsx
+deleted file mode 100644
+index cf98de3..0000000
+--- a/src/pages/home.tsx
++++ /dev/null
+@@ -1,172 +0,0 @@
+-import React, { useEffect, useRef, useState } from "react";
+-import { View, Text, ActivityIndicator, Animated, Easing } from "react-native";
+-import * as SecureStore from "expo-secure-store";
+-import { LinearGradient } from "expo-linear-gradient";
+-
+-const BRAND = {
+-  primary: "#731906",
+-  accent:  "#da0000",
+-  peach:   "#FFDFB2",
+-};
+-
+-const MIN_SPLASH_MS = 1200;
+-
+-export function HomeScreen({ navigation, route }: any) {
+-  const [booting, setBooting] = useState(true);
+-
+-  // Animações
+-  const fadeIn  = useRef(new Animated.Value(0)).current;
+-  const fadeOut = useRef(new Animated.Value(1)).current;
+-  const bounce  = useRef(new Animated.Value(0)).current;
+-
+-  // permite aumentar o tempo mínimo vindo do Login
+-  const minMs: number = route?.params?.minMs ?? MIN_SPLASH_MS;
+-
+-  useEffect(() => {
+-    Animated.timing(fadeIn, {
+-      toValue: 1,
+-      duration: 500,
+-      easing: Easing.out(Easing.ease),
+-      useNativeDriver: true,
+-    }).start();
+-
+-    const loop = Animated.loop(
+-      Animated.sequence([
+-        Animated.timing(bounce, {
+-          toValue: 1,
+-          duration: 700,
+-          easing: Easing.inOut(Easing.quad),
+-          useNativeDriver: true,
+-        }),
+-        Animated.timing(bounce, {
+-          toValue: 0,
+-          duration: 700,
+-          easing: Easing.inOut(Easing.quad),
+-          useNativeDriver: true,
+-        }),
+-      ])
+-    );
+-    loop.start();
+-    return () => loop.stop();
+-  }, [fadeIn, bounce]);
+-
+-  useEffect(() => {
+-    let mounted = true;
+-
+-    (async () => {
+-      const start = Date.now();
+-      try {
+-        const raw = await SecureStore.getItemAsync("user");
+-        if (!mounted) return;
+-
+-        const target = raw ? "Menu" : "Login";
+-
+-        const elapsed = Date.now() - start;
+-        const wait = Math.max(0, minMs - elapsed);
+-
+-        setTimeout(() => {
+-          if (!mounted) return;
+-
+-          // faz um fade-out rápido antes de trocar de tela
+-          Animated.timing(fadeOut, {
+-            toValue: 0,
+-            duration: 250,
+-            easing: Easing.out(Easing.ease),
+-            useNativeDriver: true,
+-          }).start(() => {
+-            navigation.reset({ index: 0, routes: [{ name: target }] });
+-          });
+-        }, wait);
+-      } catch {
+-        const elapsed = Date.now() - start;
+-        const wait = Math.max(0, minMs - elapsed);
+-        setTimeout(() => {
+-          if (!mounted) return;
+-          Animated.timing(fadeOut, {
+-            toValue: 0,
+-            duration: 250,
+-            easing: Easing.out(Easing.ease),
+-            useNativeDriver: true,
+-          }).start(() => {
+-            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+-          });
+-        }, wait);
+-      } finally {
+-        if (mounted) setBooting(false);
+-      }
+-    })();
+-
+-    return () => { mounted = false; };
+-  }, [navigation, minMs, fadeOut]);
+-
+-  const scale = bounce.interpolate({
+-    inputRange: [0, 1],
+-    outputRange: [1, 1.07],
+-  });
+-
+-  return (
+-    <LinearGradient
+-      colors={[BRAND.primary, BRAND.accent]}
+-      start={{ x: 0, y: 0 }}
+-      end={{ x: 1, y: 1 }}
+-      style={{ flex: 1 }}
+-    >
+-      <Animated.View
+-        style={{
+-          flex: 1,
+-          alignItems: "center",
+-          justifyContent: "center",
+-          opacity: Animated.multiply(fadeIn, fadeOut),
+-          paddingHorizontal: 24,
+-        }}
+-      >
+-        <Animated.View
+-          style={{
+-            transform: [{ scale }],
+-            width: 110,
+-            height: 110,
+-            borderRadius: 28,
+-            backgroundColor: "rgba(255,255,255,0.12)",
+-            alignItems: "center",
+-            justifyContent: "center",
+-            marginBottom: 18,
+-          }}
+-        >
+-          <Text style={{ color: "#fff", fontWeight: "800", fontSize: 28 }}>H</Text>
+-        </Animated.View>
+-
+-        <Text style={{ color: "#fff", fontSize: 24, fontWeight: "800" }}>
+-          Habilite Lanchonete
+-        </Text>
+-        <Text style={{ color: "rgba(255,255,255,0.8)", marginTop: 6, fontSize: 13 }}>
+-          Saúde • Confiança • Evolução
+-        </Text>
+-
+-        <View style={{ alignItems: "center", marginTop: 24 }}>
+-          <ActivityIndicator size="small" color={BRAND.peach} />
+-          <Text style={{ color: "rgba(255,255,255,0.8)", marginTop: 8, fontSize: 12 }}>
+-            preparando seu cardápio…
+-          </Text>
+-        </View>
+-      </Animated.View>
+-
+-      <View
+-        style={{
+-          paddingBottom: 24,
+-          paddingTop: 12,
+-          alignItems: "center",
+-          opacity: 0.9,
+-        }}
+-      >
+-        <View
+-          style={{
+-            width: 90,
+-            height: 4,
+-            borderRadius: 999,
+-            backgroundColor: "rgba(255,255,255,0.35)",
+-          }}
+-        />
+-      </View>
+-    </LinearGradient>
+-  );
+-}
+diff --git a/src/pages/login.tsx b/src/pages/login.tsx
+deleted file mode 100644
+index cacf878..0000000
+--- a/src/pages/login.tsx
++++ /dev/null
+@@ -1,154 +0,0 @@
+-import React, { useState, useRef, useEffect } from "react";
+-import {
+-  View,
+-  Text,
+-  TextInput,
+-  Pressable,
+-  KeyboardAvoidingView,
+-  Platform,
+-  Animated,
+-} from "react-native";
+-import * as SecureStore from "expo-secure-store";
+-import { Field, Card, Button } from "../components/ui";
+-
+-const BRAND = {
+-  primary: "#731906",
+-  accent: "#da0000",
+-};
+-
+-type StoredUser = { nome: string; email: string; senha: string };
+-
+-export function LoginScreen({ navigation }: any) {
+-  const [email, setEmail] = useState("");
+-  const [senha, setSenha] = useState("");
+-  const [showPwd, setShowPwd] = useState(false);
+-  const [submitting, setSubmitting] = useState(false);
+-  const [errors, setErrors] = useState<{ email?: string; senha?: string }>({});
+-
+-  const headerY = useRef(new Animated.Value(20)).current;
+-  useEffect(() => {
+-    Animated.spring(headerY, { toValue: 0, useNativeDriver: true, friction: 7 }).start();
+-  }, [headerY]);
+-
+-  function validate() {
+-    const e: typeof errors = {};
+-    if (!email.trim()) e.email = "Email é obrigatório.";
+-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Email inválido.";
+-    if (!senha.trim()) e.senha = "Senha é obrigatória.";
+-    else if (senha.length < 6) e.senha = "Mínimo de 6 caracteres.";
+-    setErrors(e);
+-    return Object.keys(e).length === 0;
+-  }
+-
+-  async function handleLogin() {
+-    if (!validate()) return;
+-    setSubmitting(true);
+-    try {
+-      const raw = await SecureStore.getItemAsync("user");
+-      if (!raw) {
+-        alert("Nenhum cadastro encontrado. Crie sua conta.");
+-        navigation.navigate("Register");
+-        return;
+-      }
+-      const saved: StoredUser = JSON.parse(raw);
+-      const ok =
+-        saved.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+-        saved.senha === senha;
+-      if (!ok) {
+-        alert("Credenciais inválidas. Confira seu e-mail e senha.");
+-        return;
+-      }
+-      await SecureStore.setItemAsync("user", JSON.stringify(saved));
+-      // passa pelo Splash (Home) antes de abrir Menu
+-      navigation.reset({ index: 0, routes: [{ name: "Home" }] });
+-    } finally {
+-      setSubmitting(false);
+-    }
+-  }
+-
+-  return (
+-    <KeyboardAvoidingView
+-      behavior={Platform.select({ ios: "padding", android: "height" })}
+-      keyboardVerticalOffset={80}
+-      className="flex-1 bg-gray-50"
+-    >
+-      {/* Header curvado */}
+-      <Animated.View
+-        style={{
+-          transform: [{ translateY: headerY }],
+-          backgroundColor: BRAND.primary,
+-          paddingHorizontal: 20,
+-          paddingTop: 48,
+-          paddingBottom: 24,
+-          borderBottomLeftRadius: 28,
+-          borderBottomRightRadius: 28,
+-        }}
+-      >
+-        <Text className="text-white/90 text-xs">Bem-vindo de volta 👋</Text>
+-        <Text className="text-white text-2xl font-extrabold mt-1">Acesse sua conta</Text>
+-      </Animated.View>
+-
+-      <View className="flex-1 px-5 pt-6">
+-        <Card className="p-5">
+-          <Field label="E-mail" error={errors.email}>
+-            <TextInput
+-              value={email}
+-              onChangeText={(t) => {
+-                setEmail(t);
+-                if (errors.email) setErrors((e) => ({ ...e, email: undefined }));
+-              }}
+-              placeholder="voce@email.com"
+-              autoCapitalize="none"
+-              keyboardType="email-address"
+-              className={`border rounded-2xl px-4 py-3 bg-white ${
+-                errors.email ? "border-red-500" : "border-gray-300"
+-              }`}
+-            />
+-          </Field>
+-
+-          <Field label="Senha" error={errors.senha}>
+-            <View
+-              className={`flex-row items-center rounded-2xl px-4 border bg-white ${
+-                errors.senha ? "border-red-500" : "border-gray-300"
+-              }`}
+-            >
+-              <TextInput
+-                value={senha}
+-                onChangeText={(t) => {
+-                  setSenha(t);
+-                  if (errors.senha) setErrors((e) => ({ ...e, senha: undefined }));
+-                }}
+-                placeholder="••••••••"
+-                secureTextEntry={!showPwd}
+-                className="flex-1 py-3"
+-              />
+-              <Pressable onPress={() => setShowPwd((s) => !s)} className="pl-3 py-2 active:opacity-80">
+-                <Text style={{ color: BRAND.accent }} className="font-semibold">
+-                  {showPwd ? "Ocultar" : "Mostrar"}
+-                </Text>
+-              </Pressable>
+-            </View>
+-          </Field>
+-
+-          <Button
+-            title={submitting ? "Entrando..." : "Entrar"}
+-            onPress={handleLogin}
+-            loading={submitting}
+-            className="mt-2"
+-          />
+-
+-          <Pressable
+-            onPress={() => navigation.navigate("Register")}
+-            className="mt-3 rounded-2xl px-4 py-3 items-center border border-gray-300 active:opacity-80"
+-          >
+-            <Text className="text-gray-800 font-semibold">Criar conta</Text>
+-          </Pressable>
+-        </Card>
+-
+-        <View className="mt-8 items-center">
+-          <Text className="text-gray-400 text-xs">Autoescola Habilite • Lanchonete</Text>
+-        </View>
+-      </View>
+-    </KeyboardAvoidingView>
+-  );
+-}
+diff --git a/src/pages/menu.tsx b/src/pages/menu.tsx
+deleted file mode 100644
+index 63a8a67..0000000
+--- a/src/pages/menu.tsx
++++ /dev/null
+@@ -1,422 +0,0 @@
+-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+-import {
+-  ActivityIndicator,
+-  Alert,
+-  Image,
+-  Pressable,
+-  Text,
+-  TextInput,
+-  View,
+-  Animated,
+-} from "react-native";
+-import { useFocusEffect } from "@react-navigation/native";
+-import * as SecureStore from "expo-secure-store";
+-import { Ionicons } from "@expo/vector-icons";
+-import * as Haptics from "expo-haptics";
+-import { Card, Button } from "../components/ui";
+-import { useCart } from "../context/cart";
+-import { brl } from "../utils/money";
+-import { getMenuCategories, MENU_ITEMS, MenuItem } from "../utils/menu";
+-import { ProductSheet } from "../components/ui/ProductSheet";
+-
+-const HEADER_MAX = 120;
+-const HEADER_MIN = 90;
+-const HEADER_DELTA = HEADER_MAX - HEADER_MIN;
+-
+-type StoredUser = { nome: string; email: string };
+-
+-export function MenuScreen({ navigation }: any) {
+-  const { addItem, totalQty, clear, totalPrice } = useCart();
+-
+-  const [allProducts, setAllProducts] = useState<MenuItem[]>([]);
+-  const [loading, setLoading] = useState(true);
+-  const [selectedCategory, setSelectedCategory] =
+-    useState<ReturnType<typeof getMenuCategories>[number]>("todos");
+-  const [search, setSearch] = useState("");
+-  const [userName, setUserName] = useState<string | null>(null);
+-
+-  const [sheetOpen, setSheetOpen] = useState(false);
+-  const [selectedItem, setSelected] = useState<MenuItem | null>(null);
+-  const openSheet = (item: MenuItem) => {
+-    setSelected(item);
+-    setSheetOpen(true);
+-  };
+-  const closeSheet = () => setSheetOpen(false);
+-
+-  const scrollY = useRef(new Animated.Value(0)).current;
+-  const badgeScale = useRef(new Animated.Value(1)).current;
+-
+-  const [barVisible, setBarVisible] = useState(false);
+-  const [lastAdded, setLastAdded] = useState<{ name: string; qty: number } | null>(null);
+-  const barY = useRef(new Animated.Value(100)).current;
+-
+-  function bumpBadge() {
+-    Animated.sequence([
+-      Animated.timing(badgeScale, { toValue: 1.2, duration: 120, useNativeDriver: true }),
+-      Animated.spring(badgeScale, { toValue: 1, useNativeDriver: true, friction: 4 }),
+-    ]).start();
+-  }
+-
+-  function showBar(name: string, qty: number) {
+-    setLastAdded({ name, qty });
+-    setBarVisible(true);
+-    Animated.timing(barY, { toValue: 0, duration: 220, useNativeDriver: true }).start();
+-  }
+-  function hideBar() {
+-    Animated.timing(barY, { toValue: 100, duration: 180, useNativeDriver: true }).start(() => {
+-      setBarVisible(false);
+-      setLastAdded(null);
+-    });
+-  }
+-
+-  useEffect(() => {
+-    const timeout = setTimeout(() => {
+-      setAllProducts(MENU_ITEMS);
+-      setLoading(false);
+-    }, 600);
+-    return () => clearTimeout(timeout);
+-  }, []);
+-
+-  useFocusEffect(
+-    useCallback(() => {
+-      let isActive = true;
+-      (async () => {
+-        try {
+-          const raw = await SecureStore.getItemAsync("user");
+-          if (!isActive) return;
+-          if (raw) {
+-            const stored: StoredUser = JSON.parse(raw);
+-            setUserName(stored.nome);
+-          } else {
+-            setUserName(null);
+-          }
+-        } catch {
+-          setUserName(null);
+-        }
+-      })();
+-      return () => {
+-        isActive = false;
+-      };
+-    }, [])
+-  );
+-
+-  const categories = useMemo(
+-    () => getMenuCategories(allProducts),
+-    [allProducts]
+-  );
+-
+-  const filtered = useMemo(() => {
+-    const q = search.trim().toLowerCase();
+-    return allProducts.filter((item) => {
+-      const matchesCategory =
+-        selectedCategory === "todos" || item.category === selectedCategory;
+-      const matchesSearch =
+-        !q ||
+-        item.name.toLowerCase().includes(q) ||
+-        item.description.toLowerCase().includes(q) ||
+-        item.tags?.some((t) => t.toLowerCase().includes(q));
+-      return matchesCategory && matchesSearch;
+-    });
+-  }, [allProducts, search, selectedCategory]);
+-
+-  const handleAddToCart = useCallback(
+-    (product: MenuItem, qty: number = 1) => {
+-      addItem({
+-        id: product.id,
+-        name: product.name,
+-        price: product.price,
+-        image: product.image ?? "",
+-        quantity: 1,
+-        category: product.category,
+-      }, qty);
+-
+-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+-      bumpBadge();
+-      showBar(product.name, qty);
+-    },
+-    [addItem]
+-  );
+-
+-  const handleLogout = useCallback(() => {
+-    Alert.alert("Sair", "Deseja encerrar a sessão?", [
+-      { text: "Cancelar", style: "cancel" },
+-      {
+-        text: "Sair",
+-        style: "destructive",
+-        onPress: async () => {
+-          await SecureStore.deleteItemAsync("user");
+-          clear();
+-          navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+-        },
+-      },
+-    ]);
+-  }, [clear, navigation]);
+-
+-  if (loading) {
+-    return (
+-      <View className="flex-1 items-center justify-center bg-gray-50">
+-        <ActivityIndicator size="large" color="#e11d48" />
+-        <Text className="mt-3 text-gray-500">Carregando cardápio...</Text>
+-      </View>
+-    );
+-  }
+-
+-  const headerHeight = scrollY.interpolate({
+-    inputRange: [0, HEADER_DELTA],
+-    outputRange: [HEADER_MAX, HEADER_MIN],
+-    extrapolate: "clamp",
+-  });
+-  const titleSize = scrollY.interpolate({
+-    inputRange: [0, HEADER_DELTA],
+-    outputRange: [22, 18],
+-    extrapolate: "clamp",
+-  });
+-  const shadowOpacity = scrollY.interpolate({
+-    inputRange: [0, HEADER_DELTA],
+-    outputRange: [0, 0.12],
+-    extrapolate: "clamp",
+-  });
+-  const headerBg = "rgb(115, 25, 6)";
+-
+-  return (
+-    <View className="flex-1 bg-gray-50">
+-      <Animated.View
+-        style={{
+-          height: headerHeight,
+-          paddingHorizontal: 16,
+-          paddingTop: 40,
+-          paddingBottom: 12,
+-          backgroundColor: headerBg,
+-          borderBottomLeftRadius: 24,
+-          borderBottomRightRadius: 24,
+-          position: "absolute",
+-          top: 0,
+-          left: 0,
+-          right: 0,
+-          zIndex: 100,
+-          shadowColor: "#000",
+-          shadowOpacity: (shadowOpacity as unknown as number) || 0.08,
+-          shadowRadius: 8,
+-          shadowOffset: { width: 0, height: 4 },
+-          elevation: 4,
+-        }}
+-      >
+-        <View className="flex-row items-center justify-between">
+-          <View>
+-            <Text className="text-white/90 text-xs">
+-              Bem-vindo{userName ? "," : ""}
+-            </Text>
+-            <Animated.Text
+-              style={{ fontSize: titleSize, fontWeight: "800", color: "white" }}
+-            >
+-              {userName ?? "Aluno Habilite"}
+-            </Animated.Text>
+-          </View>
+-
+-          <View className="flex-row items-center gap-3">
+-            <Pressable
+-              onPress={() => navigation.navigate("Orders")}
+-              className="p-2 rounded-2xl bg-white/20 active:opacity-80"
+-            >
+-              <Ionicons name="document-text-outline" size={20} color="#fff" />
+-            </Pressable>
+-
+-            <Pressable
+-              onPress={() => navigation.navigate("Cart")}
+-              className="relative p-2 rounded-2xl bg-white active:opacity-90"
+-            >
+-              <Ionicons name="cart" size={22} color="#e11d48" />
+-              {totalQty > 0 && (
+-                <Animated.View
+-                  style={{
+-                    transform: [{ scale: badgeScale }],
+-                    position: "absolute",
+-                    top: -4,
+-                    right: -4,
+-                    backgroundColor: "#da0000",
+-                    borderRadius: 9999,
+-                    paddingHorizontal: 8,
+-                    paddingVertical: 2,
+-                  }}
+-                >
+-                  <Text className="text-white text-xs font-extrabold">
+-                    {totalQty}
+-                  </Text>
+-                </Animated.View>
+-              )}
+-            </Pressable>
+-
+-            <Pressable
+-              onPress={handleLogout}
+-              className="p-2 rounded-2xl bg-white/20 active:opacity-80"
+-            >
+-              <Ionicons name="log-out-outline" size={20} color="#fff" />
+-            </Pressable>
+-          </View>
+-        </View>
+-      </Animated.View>
+-
+-      <Animated.FlatList
+-        contentContainerStyle={{
+-          paddingTop: HEADER_MAX + 16,
+-          paddingHorizontal: 16,
+-          paddingBottom: 120,
+-        }}
+-        data={filtered}
+-        keyExtractor={(item) => String(item.id)}
+-        ItemSeparatorComponent={() => <View className="h-3" />}
+-        onScroll={Animated.event(
+-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+-          { useNativeDriver: false }
+-        )}
+-        renderItem={({ item }) => (
+-          <Card className="overflow-hidden">
+-            <Pressable
+-              onPress={() => openSheet(item)}
+-              className="flex-row gap-3"
+-            >
+-              {item.image ? (
+-                <View className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-200 mr-1.5">
+-                  <Image
+-                    source={{
+-                      uri:
+-                        item.image?.trim() ||
+-                        "https://picsum.photos/seed/food/200/200",
+-                    }}
+-                    className="w-full h-full"
+-                  />
+-                </View>
+-              ) : null}
+-
+-              <View className="flex-1 pr-3">
+-                <Text
+-                  className="text-base font-semibold text-gray-800"
+-                  numberOfLines={1}
+-                >
+-                  {item.name}
+-                </Text>
+-                {!!item.description && (
+-                  <Text className="text-gray-500 mt-1" numberOfLines={2}>
+-                    {item.description}
+-                  </Text>
+-                )}
+-                <Text className="text-habilite-primary font-extrabold mt-2">
+-                  {brl(item.price)}
+-                </Text>
+-              </View>
+-
+-              <View className="justify-center">
+-                <Button
+-                  title="Adicionar"
+-                  className="px-4"
+-                  onPress={() => handleAddToCart(item, 1)}
+-                />
+-              </View>
+-            </Pressable>
+-          </Card>
+-        )}
+-        ListHeaderComponent={
+-          <Card className="mb-4">
+-            <TextInput
+-              value={search}
+-              onChangeText={setSearch}
+-              placeholder="Buscar por lanche, bebida ou sobremesa"
+-              placeholderTextColor="#9CA3AF"
+-              className="border border-gray-300 rounded-2xl px-4 py-3 bg-white"
+-            />
+-            <View className="flex-row flex-wrap gap-2 mt-4">
+-              {categories.map((category) => {
+-                const isActive = category === selectedCategory;
+-                return (
+-                  <Pressable
+-                    key={category}
+-                    onPress={() => setSelectedCategory(category)}
+-                    className={`px-4 py-2 rounded-2xl border ${
+-                      isActive
+-                        ? "bg-habilite-accent border-habilite-accent"
+-                        : "bg-white border-gray-300"
+-                    }`}
+-                  >
+-                    <Text
+-                      className={
+-                        isActive
+-                          ? "text-black font-semibold"
+-                          : "text-habilite-primary"
+-                      }
+-                    >
+-                      {category === "todos"
+-                        ? "Todos"
+-                        : category.charAt(0).toUpperCase() + category.slice(1)}
+-                    </Text>
+-                  </Pressable>
+-                );
+-              })}
+-            </View>
+-          </Card>
+-        }
+-      />
+-
+-      {barVisible && (
+-        <Animated.View
+-          style={{
+-            position: "absolute",
+-            left: 0,
+-            right: 0,
+-            bottom: 16,
+-            transform: [{ translateY: barY }],
+-          }}
+-        >
+-          <View className="mx-4 rounded-2xl bg-white border border-gray-200 shadow-lg p-4">
+-            <View className="flex-row items-center justify-between">
+-              <View className="flex-1 pr-3">
+-                <Text className="text-sm text-gray-500">
+-                  {lastAdded
+-                    ? `${lastAdded.qty}× ${lastAdded.name} adicionado`
+-                    : "Item adicionado"}
+-                </Text>
+-                <Text className="text-base font-extrabold text-habilite-primary">
+-                  Subtotal: {brl(totalPrice)}
+-                </Text>
+-              </View>
+-
+-              <Pressable
+-                onPress={() => navigation.navigate("Cart")}
+-                className="px-4 py-3 rounded-2xl bg-habilite-accent active:opacity-90 mr-2"
+-              >
+-                <Text className="text-white font-bold">Ver carrinho</Text>
+-              </Pressable>
+-
+-              <Pressable
+-                onPress={() => navigation.navigate("Checkout")}
+-                className="px-4 py-3 rounded-2xl border border-gray-300 bg-white active:opacity-80"
+-              >
+-                <Text className="text-habilite-primary font-semibold">
+-                  Finalizar
+-                </Text>
+-              </Pressable>
+-            </View>
+-
+-            <Pressable
+-              onPress={hideBar}
+-              className="self-center mt-2 active:opacity-70"
+-            >
+-              <Text className="text-xs text-gray-400">Ocultar</Text>
+-            </Pressable>
+-          </View>
+-        </Animated.View>
+-      )}
+-
+-      <ProductSheet
+-        visible={sheetOpen}
+-        item={selectedItem}
+-        onClose={closeSheet}
+-        onAdd={(quantity) => {
+-          if (selectedItem) {
+-            handleAddToCart(selectedItem, quantity);
+-            closeSheet();
+-          }
+-        }}
+-      />
+-    </View>
+-  );
+-}
+diff --git a/src/pages/orders.tsx b/src/pages/orders.tsx
+deleted file mode 100644
+index a6f5b53..0000000
+--- a/src/pages/orders.tsx
++++ /dev/null
+@@ -1,208 +0,0 @@
+-import React, { useCallback, useEffect, useState } from "react";
+-import { View, Text, FlatList, RefreshControl, Pressable } from "react-native";
+-import { Ionicons } from "@expo/vector-icons";
+-import { Card, Button } from "../components/ui";
+-import { getOrders } from "../utils/orders";
+-
+-type OrderItem = {
+-  id: number;
+-  name: string;
+-  price: number;
+-  quantity: number;
+-};
+-
+-type Payment = "pix" | "dinheiro" | "cartao";
+-
+-type Order = {
+-  id: string;
+-  createdAt: number;
+-  customer: string;
+-  payment: Payment;
+-  total: number;
+-  items: OrderItem[];
+-  note?: string;
+-  status?: string | null;
+-};
+-
+-// Paleta Habilite
+-const BRAND = {
+-  primary: "#731906",
+-  accent: "#da0000",
+-  peach:  "#FFDFB2",
+-};
+-
+-type Status = "aguardando" | "preparando" | "finalizado";
+-type StatusInfo = { label: string; bg: string; fg: string };
+-
+-const STATUS_STYLES: Record<Status, StatusInfo> = {
+-  aguardando: { label: "Aguardando", bg: "#FFDFB2", fg: "#731906" },
+-  preparando: { label: "Preparando", bg: "#FFE0E0", fg: "#DA0000" },
+-  finalizado: { label: "Finalizado", bg: "#E6F5E6", fg: "#166534" },
+-};
+-
+-function normalizeStatus(s?: string | null): Status {
+-  if (!s) return "aguardando";
+-  const v = s.toLowerCase().trim();
+-  if (["lido", "novo", "recebido", "pendente"].includes(v)) return "aguardando";
+-  if (["processo", "em processo", "preparo", "preparando", "andamento"].includes(v)) return "preparando";
+-  if (["finalizado", "pronto", "concluido", "concluído"].includes(v)) return "finalizado";
+-  return "aguardando";
+-}
+-
+-function formatBRL(n: number) {
+-  try {
+-    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+-  } catch {
+-    return `R$ ${n.toFixed(2)}`.replace(".", ",");
+-  }
+-}
+-
+-function formatDate(ts: number) {
+-  const d = new Date(ts);
+-  return d.toLocaleString("pt-BR", {
+-    day: "2-digit", month: "2-digit", year: "2-digit",
+-    hour: "2-digit", minute: "2-digit",
+-  });
+-}
+-
+-export function OrdersScreen({ navigation }: any) {
+-  const [orders, setOrders] = useState<Order[]>([]);
+-  const [loading, setLoading] = useState(true);
+-  const [refreshing, setRefreshing] = useState(false);
+-
+-  const load = useCallback(async () => {
+-    setLoading(true);
+-    try {
+-      const list = await getOrders();
+-      const safe: Order[] = Array.isArray(list) ? list : [];
+-      const withStatus = safe.map(o => ({ ...o, status: normalizeStatus(o.status) }));
+-      setOrders([...withStatus].reverse()); // mais recentes primeiro
+-    } finally {
+-      setLoading(false);
+-    }
+-  }, []);
+-
+-  useEffect(() => {
+-    load();
+-  }, [load]);
+-
+-  const onRefresh = useCallback(async () => {
+-    setRefreshing(true);
+-    try {
+-      await load();
+-    } finally {
+-      setRefreshing(false);
+-    }
+-  }, [load]);
+-
+-  return (
+-    <View className="flex-1 bg-gray-50">
+-      {/* HEADER */}
+-      <View
+-        style={{
+-          backgroundColor: BRAND.primary,
+-          paddingHorizontal: 16,
+-          paddingTop: 44, // deixa respirando sob a status bar
+-          paddingBottom: 14,
+-          borderBottomLeftRadius: 24,
+-          borderBottomRightRadius: 24,
+-        }}
+-      >
+-        <View className="flex-row items-center justify-between">
+-          <Pressable
+-            onPress={() => navigation.goBack()}
+-            className="p-2 rounded-2xl bg-white/15 active:opacity-80"
+-          >
+-            <Ionicons name="arrow-back" size={20} color="#fff" />
+-          </Pressable>
+-
+-          <Text className="text-white text-xl font-extrabold">Meus pedidos</Text>
+-
+-          <Pressable
+-            onPress={() => navigation.reset({ index: 0, routes: [{ name: "Menu" }] })}
+-            className="px-3 py-2 rounded-2xl bg-white active:opacity-90"
+-          >
+-            <Text style={{ color: BRAND.accent }} className="font-bold">Menu</Text>
+-          </Pressable>
+-        </View>
+-      </View>
+-
+-      {/* LISTA */}
+-      {loading && orders.length === 0 ? (
+-        <View className="flex-1 items-center justify-center">
+-          <Text className="text-gray-500">Carregando seus pedidos…</Text>
+-        </View>
+-      ) : orders.length === 0 ? (
+-        <View className="flex-1 items-center justify-center px-6">
+-          <Text className="text-gray-500 text-center">
+-            Você ainda não fez nenhum pedido.
+-          </Text>
+-          <Button
+-            title="Ir ao cardápio"
+-            className="mt-4"
+-            onPress={() => navigation.reset({ index: 0, routes: [{ name: "Menu" }] })}
+-          />
+-        </View>
+-      ) : (
+-        <FlatList
+-          contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
+-          data={orders}
+-          keyExtractor={(o) => o.id}
+-          ItemSeparatorComponent={() => <View className="h-3" />}
+-          refreshControl={
+-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+-          }
+-          renderItem={({ item }) => {
+-            const st = STATUS_STYLES[normalizeStatus(item.status)];
+-            return (
+-              <Card>
+-                {/* Topo: ID + Data + Status */}
+-                <View className="flex-row items-center justify-between">
+-                  <View className="flex-1 pr-3">
+-                    <Text className="text-sm text-gray-500">#{item.id}</Text>
+-                    <Text className="text-gray-400 text-xs">{formatDate(item.createdAt)}</Text>
+-                  </View>
+-
+-                  <View className="px-3 py-1 rounded-full" style={{ backgroundColor: st.bg }}>
+-                    <Text className="text-xs font-bold" style={{ color: st.fg }}>
+-                      {st.label}
+-                    </Text>
+-                  </View>
+-                </View>
+-
+-                {/* Itens */}
+-                <View className="mt-3">
+-                  {item.items.map((it) => (
+-                    <View
+-                      key={`${item.id}-${it.id}`}
+-                      className="flex-row items-center justify-between mb-1"
+-                    >
+-                      <Text className="text-gray-800">
+-                        {it.quantity}× {it.name}
+-                      </Text>
+-                      <Text className="text-gray-600">
+-                        {formatBRL(it.price * it.quantity)}
+-                      </Text>
+-                    </View>
+-                  ))}
+-                </View>
+-
+-                {!!item.note && (
+-                  <View className="mt-2">
+-                    <Text className="text-xs text-gray-500">Obs.: {item.note}</Text>
+-                  </View>
+-                )}
+-
+-                {/* Total */}
+-                <View className="flex-row items-center justify-between mt-3 pt-3 border-t border-gray-200">
+-                  <Text className="font-semibold">Total</Text>
+-                  <Text className="font-extrabold">{formatBRL(item.total)}</Text>
+-                </View>
+-              </Card>
+-            );
+-          }}
+-        />
+-      )}
+-    </View>
+-  );
+-}
+diff --git a/src/pages/register.tsx b/src/pages/register.tsx
+deleted file mode 100644
+index 94dd48b..0000000
+--- a/src/pages/register.tsx
++++ /dev/null
+@@ -1,178 +0,0 @@
+-import React, { useState, useRef, useEffect } from "react";
+-import { View, Text, TextInput, Pressable, Animated, KeyboardAvoidingView, Platform } from "react-native";
+-import * as SecureStore from "expo-secure-store";
+-import { Card, Field, Button } from "../components/ui";
+-
+-const BRAND = {
+-  primary: "#731906",
+-  accent: "#da0000",
+-};
+-
+-type StoredUser = { nome: string; email: string; senha: string };
+-
+-export function RegisterScreen({ navigation }: any) {
+-  const [nome, setNome] = useState("");
+-  const [email, setEmail] = useState("");
+-  const [senha, setSenha] = useState("");
+-  const [confirmar, setConfirmar] = useState("");
+-
+-  const [showPwd, setShowPwd] = useState(false);
+-  const [showPwd2, setShowPwd2] = useState(false);
+-  const [submitting, setSubmitting] = useState(false);
+-
+-  const [erros, setErros] = useState<{ nome?: string; email?: string; senha?: string; confirmar?: string }>({});
+-
+-  const headerY = useRef(new Animated.Value(20)).current;
+-  useEffect(() => {
+-    Animated.spring(headerY, { toValue: 0, useNativeDriver: true, friction: 7 }).start();
+-  }, [headerY]);
+-
+-  function validate() {
+-    const e: typeof erros = {};
+-    if (!nome.trim()) e.nome = "Nome é obrigatório.";
+-    if (!email.trim()) e.email = "Email é obrigatório.";
+-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Email inválido.";
+-    if (!senha.trim()) e.senha = "Senha é obrigatória.";
+-    else if (senha.length < 6) e.senha = "A senha deve ter pelo menos 6 caracteres.";
+-    if (!confirmar.trim()) e.confirmar = "Confirmação é obrigatória.";
+-    else if (confirmar !== senha) e.confirmar = "As senhas não coincidem.";
+-    setErros(e);
+-    return Object.keys(e).length === 0;
+-  }
+-
+-  async function checkEmailExists() {
+-    const raw = await SecureStore.getItemAsync("user");
+-    if (!raw) return false;
+-    const saved: StoredUser = JSON.parse(raw);
+-    return saved.email.trim().toLowerCase() === email.trim().toLowerCase();
+-  }
+-
+-  async function handleRegister() {
+-    if (!validate()) return;
+-    setSubmitting(true);
+-    try {
+-      if (await checkEmailExists()) {
+-        alert("Email já cadastrado. Tente outro.");
+-        return;
+-      }
+-      const user: StoredUser = { nome, email, senha };
+-      await SecureStore.setItemAsync("user", JSON.stringify(user));
+-      alert("Cadastro realizado com sucesso!");
+-      navigation.reset({ index: 0, routes: [{ name: "Home" }] }); // passa pelo Splash
+-    } finally {
+-      setSubmitting(false);
+-    }
+-  }
+-
+-  return (
+-    <KeyboardAvoidingView
+-      behavior={Platform.select({ ios: "padding", android: "height" })}
+-      keyboardVerticalOffset={80}
+-      className="flex-1 bg-gray-50"
+-    >
+-      {/* Header curvado */}
+-      <Animated.View
+-        style={{
+-          transform: [{ translateY: headerY }],
+-          backgroundColor: BRAND.primary,
+-          paddingHorizontal: 20,
+-          paddingTop: 48,
+-          paddingBottom: 24,
+-          borderBottomLeftRadius: 28,
+-          borderBottomRightRadius: 28,
+-        }}
+-      >
+-        <Text className="text-white/90 text-xs">Bora começar 🚀</Text>
+-        <Text className="text-white text-2xl font-extrabold mt-1">Criar conta</Text>
+-      </Animated.View>
+-
+-      <View className="flex-1 px-5 pt-6">
+-        <Card className="p-5">
+-          <Field label="Nome" error={erros.nome}>
+-            <TextInput
+-              value={nome}
+-              onChangeText={(t) => {
+-                setNome(t);
+-                if (erros.nome) setErros((e) => ({ ...e, nome: undefined }));
+-              }}
+-              placeholder="Seu nome completo"
+-              className={`border rounded-2xl px-4 py-3 bg-white ${erros.nome ? "border-red-500" : "border-gray-300"}`}
+-            />
+-          </Field>
+-
+-          <Field label="E-mail" error={erros.email}>
+-            <TextInput
+-              value={email}
+-              onChangeText={(t) => {
+-                setEmail(t);
+-                if (erros.email) setErros((e) => ({ ...e, email: undefined }));
+-              }}
+-              placeholder="voce@email.com"
+-              autoCapitalize="none"
+-              keyboardType="email-address"
+-              className={`border rounded-2xl px-4 py-3 bg-white ${erros.email ? "border-red-500" : "border-gray-300"}`}
+-            />
+-          </Field>
+-
+-          <Field label="Senha" error={erros.senha}>
+-            <View className={`flex-row items-center rounded-2xl px-4 border bg-white ${erros.senha ? "border-red-500" : "border-gray-300"}`}>
+-              <TextInput
+-                value={senha}
+-                onChangeText={(t) => {
+-                  setSenha(t);
+-                  if (erros.senha) setErros((e) => ({ ...e, senha: undefined }));
+-                }}
+-                placeholder="••••••••"
+-                secureTextEntry={!showPwd}
+-                className="flex-1 py-3"
+-              />
+-              <Pressable onPress={() => setShowPwd((s) => !s)} className="pl-3 py-2 active:opacity-80">
+-                <Text style={{ color: BRAND.accent }} className="font-semibold">
+-                  {showPwd ? "Ocultar" : "Mostrar"}
+-                </Text>
+-              </Pressable>
+-            </View>
+-          </Field>
+-
+-          <Field label="Confirmar senha" error={erros.confirmar}>
+-            <View className={`flex-row items-center rounded-2xl px-4 border bg-white ${erros.confirmar ? "border-red-500" : "border-gray-300"}`}>
+-              <TextInput
+-                value={confirmar}
+-                onChangeText={(t) => {
+-                  setConfirmar(t);
+-                  if (erros.confirmar) setErros((e) => ({ ...e, confirmar: undefined }));
+-                }}
+-                placeholder="••••••••"
+-                secureTextEntry={!showPwd2}
+-                className="flex-1 py-3"
+-              />
+-              <Pressable onPress={() => setShowPwd2((s) => !s)} className="pl-3 py-2 active:opacity-80">
+-                <Text style={{ color: BRAND.accent }} className="font-semibold">
+-                  {showPwd2 ? "Ocultar" : "Mostrar"}
+-                </Text>
+-              </Pressable>
+-            </View>
+-          </Field>
+-
+-          <Button
+-            title={submitting ? "Criando..." : "Criar conta"}
+-            onPress={handleRegister}
+-            loading={submitting}
+-            className="mt-2"
+-          />
+-
+-          <Pressable
+-            onPress={() => navigation.navigate("Login")}
+-            className="mt-3 rounded-2xl px-4 py-3 items-center border border-gray-300 active:opacity-80"
+-          >
+-            <Text className="text-gray-800 font-semibold">Já tenho conta</Text>
+-          </Pressable>
+-        </Card>
+-
+-        <View className="mt-8 items-center">
+-          <Text className="text-gray-400 text-xs">Autoescola Habilite • Lanchonete</Text>
+-        </View>
+-      </View>
+-    </KeyboardAvoidingView>
+-  );
+-}
+diff --git a/src/pages/splash.tsx b/src/pages/splash.tsx
+deleted file mode 100644
+index 0a6f64b..0000000
+--- a/src/pages/splash.tsx
++++ /dev/null
+@@ -1,18 +0,0 @@
+-import { useEffect } from "react";
+-import { View, Text } from "react-native";
+-
+-export function SplashScreen({ navigation }: any) {
+-  useEffect(() => {
+-    const t = setTimeout(() => {
+-      navigation.reset({ index: 0, routes: [{ name: "Menu" }] });
+-    }, 900);
+-    return () => clearTimeout(t);
+-  }, [navigation]);
+-
+-  return (
+-    <View className="flex-1 items-center justify-center bg-[#731906]">
+-      <Text className="text-white text-2xl font-extrabold">Habilite Lanchonete</Text>
+-      <Text className="text-white/80 mt-1">carregando seu cardápio...</Text>
+-    </View>
+-  );
+-}
+diff --git a/src/pages/success.tsx b/src/pages/success.tsx
+deleted file mode 100644
+index 8790df2..0000000
+--- a/src/pages/success.tsx
++++ /dev/null
+@@ -1,53 +0,0 @@
+-import { useEffect, useRef } from "react";
+-import { View, Text, Pressable, Animated } from "react-native";
+-import { Ionicons } from "@expo/vector-icons";
+-import * as Haptics from "expo-haptics";
+-
+-export function SuccessScreen({ route, navigation }: any) {
+-  const { orderId } = route.params ?? {};
+-  const scale = useRef(new Animated.Value(0.6)).current;
+-  const opacity = useRef(new Animated.Value(0)).current;
+-
+-  useEffect(() => {
+-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+-    Animated.parallel([
+-      Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 6 }),
+-      Animated.timing(opacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+-    ]).start();
+-  }, []);
+-
+-  return (
+-    <View className="flex-1 items-center justify-center px-8 bg-gray-50">
+-      <Animated.View
+-        style={{
+-          transform: [{ scale }],
+-          opacity,
+-        }}
+-        className="w-20 h-20 rounded-full bg-habilite-accent items-center justify-center mb-4"
+-      >
+-        <Ionicons name="checkmark" size={44} color="#fff" />
+-      </Animated.View>
+-
+-      <Text className="text-2xl font-extrabold text-habilite-primary">
+-        Pedido confirmado!
+-      </Text>
+-      {!!orderId && (
+-        <Text className="mt-2 text-gray-500">Código do pedido: {orderId}</Text>
+-      )}
+-
+-      <Pressable
+-        onPress={() => navigation.reset({ index: 0, routes: [{ name: "Menu" }] })}
+-        className="mt-8 px-5 py-3 rounded-2xl bg-habilite-accent active:opacity-90"
+-      >
+-        <Text className="text-white font-bold">Voltar ao cardápio</Text>
+-      </Pressable>
+-
+-      <Pressable
+-        onPress={() => navigation.navigate("Orders")}
+-        className="mt-3 px-5 py-3 rounded-2xl border border-gray-300 bg-white active:opacity-80"
+-      >
+-        <Text className="text-habilite-primary font-semibold">Ver meus pedidos</Text>
+-      </Pressable>
+-    </View>
+-  );
+-}
+diff --git a/tailwind.config.js b/tailwind.config.js
+index ab878b8..bfd6f66 100644
+--- a/tailwind.config.js
++++ b/tailwind.config.js
+@@ -2,6 +2,7 @@
+ module.exports = {
+   content: [
+     './App.{js,jsx,ts,tsx}',
++    './app/**/*.{js,jsx,ts,tsx}',
+     './src/**/*.{js,jsx,ts,tsx}',
+   ],
+   theme: {
+diff --git a/tsconfig.json b/tsconfig.json
+index 4ceadec..0550c36 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -9,6 +9,17 @@
+     "allowJs": true,
+     "resolveJsonModule": true,
+     "noEmit": true,
+-    "types": ["nativewind/types", "react", "react-native", "expo"]
+-  }
++    "types": [
++      "nativewind/types",
++      "react",
++      "react-native",
++      "expo"
++    ]
++  },
++  "include": [
++    "**/*.ts",
++    "**/*.tsx",
++    "**/*.js",
++    "**/*.jsx"
++  ]
+ }
